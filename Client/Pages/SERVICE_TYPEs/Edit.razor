@@ -1,0 +1,143 @@
+﻿@page "/SERVICE_TYPEs/Edit/{refMenuId:int?}/{Id:int?}"
+
+@inject NavigationManager NavigationManager;
+@inject Infrastructure.NotificationSettings NotificationSettingsClass;
+
+@inject Services.SERVICE_TYPEsService SERVICE_TYPEsService;
+
+@if (IsFormLoading)
+{
+    <NazmLoading IsShow="true" />
+}
+else
+{
+
+	@if (IsFormProgressing)
+	{
+		<NazmLoadingProgress IsShow="true" />
+	}
+
+	@if (refMenuId != null && Id != null)
+	{
+		<FormEditor 
+			 Model="Model"
+			 OnValidSubmit="OnSubmitAsync"
+			 Type="Infrastructure.Enums.EditFormType.Edit"
+			 refMenuId="refMenuId">
+		</FormEditor>
+
+	}
+}
+
+<NazmNotification NotificationSettings="@(lstNotifications)" />
+
+
+
+
+@code
+{
+	// ********************
+	#region Properties
+
+	[Parameter]
+	public int? refMenuId { get; set; }
+
+	[Parameter]
+	public int? Id { get; set; }
+
+	public bool IsFormLoading { get; set; }
+	public bool IsFormProgressing { get; set; }
+
+	private List<Infrastructure.NotificationSettings> lstNotifications { get; set; }
+
+	public ViewModels.SERVICE_TYPEs.SERVICE_TYPEViewModel Model { get; set; }
+	private ViewModels.SERVICE_TYPEs.SERVICE_TYPEUpdateViewModel NewModel { get; set; }
+
+	#endregion
+
+	// ********************
+	#region Events
+
+	protected override async Task OnInitializedAsync()
+	{
+		IsFormLoading = true;
+		// ********************
+		await base.OnInitializedAsync();
+		Model =
+			new ViewModels.SERVICE_TYPEs.SERVICE_TYPEViewModel();
+		
+		lstNotifications = new List<Infrastructure.NotificationSettings>();
+		// ********************
+		IsFormLoading = false;
+
+	}
+
+	protected override async Task OnParametersSetAsync()
+	{
+		IsFormLoading = true;
+		// ********************
+		try
+		{
+			if (refMenuId != null && Id != null)
+				Model = await SERVICE_TYPEsService.FindByIdAsync(Id.Value);
+		}
+		catch (Exception ex)
+		{
+			string str = ex.Message;
+		}
+		// ********************
+		IsFormLoading = false;
+
+	}
+
+	private async Task OnSubmitAsync()
+	{
+		IsFormProgressing = true;       
+		// ********************
+		bool flagResult = await SaveAsync();
+		if (flagResult)
+		{
+			string uri = $"{Infrastructure.Utility.setUri<Client.Pages.SERVICE_TYPEs.List>()}/{refMenuId.Value}";
+			NavigationManager.NavigateTo(uri: uri, forceLoad: false);
+		}
+
+		IsFormProgressing = false;
+		// ********************
+	}
+
+	private async Task<bool> SaveAsync()
+	{
+		NewModel = new ViewModels.SERVICE_TYPEs.SERVICE_TYPEUpdateViewModel()
+		{
+			ID = Model.ID,
+			SSTID = Model.SSTID,
+			SSTT = Model.SSTT,
+			VRA = Model.VRA,
+            FIELDCODE = Model.FIELDCODE,
+		};
+
+		var varResult = await SERVICE_TYPEsService.PutAsync(NewModel);
+		bool flagReturn = false;
+		if (varResult != null)
+		{
+			lstNotifications.Clear();
+			flagReturn = varResult.IsSuccess;
+			if (varResult.IsSuccess)
+			{
+				if (varResult.Successes.Count() > 0)
+					lstNotifications.AddRange(NotificationSettingsClass.setNotificationsList
+						(varResult.Successes, Infrastructure.Enums.MessageType.Success));
+			}
+			if (varResult.IsFailed)
+			{
+				if (varResult.Errors.Count() > 0)
+					lstNotifications.AddRange(NotificationSettingsClass.setNotificationsList
+						(varResult.Errors, Infrastructure.Enums.MessageType.Error));
+			}
+		}
+
+		return flagReturn;
+	}
+
+	#endregion
+}

@@ -1,0 +1,839 @@
+﻿@using Infrastructure
+@using System.Globalization
+@inject NavigationManager NavigationManager;
+@inject Infrastructure.Utility UtilityClass;
+
+
+@inject Services.TaxOrganizationSalesService TaxOrganizationSalesService;
+
+@inject Services.BranchsService BranchsService ;
+@inject Services.InvoiceModelsService InvoiceModelsService ;
+@inject Services.NetsalesService NetsalesService ;
+@inject Services.DimProductsService DimProductsService ;
+@inject Services.SERVICE_TYPEsService SERVICE_TYPEsService ;
+
+
+@if (IsFormProgressing)
+{
+    <NazmLoadingProgress IsShow="true" />
+}
+
+<div class="mb-3">
+    <h6 class="modal-title fs-5 text-danger d-inline" id="modalEditLabel">
+        @(Resources.DataDictionary.Attention) :
+    </h6>
+    <span>
+        @(Resources.Messages.Common.InnoUniqueMessage)
+    </span>
+</div>
+
+<div class="">
+    <div class="row mr-5">
+        <EditForm Model="Model" OnValidSubmit="HandleValidSubmitAsync">
+            <FluentValidationValidator />
+            <DataAnnotationsValidator />
+            <div class="row">
+
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="inno" class="form-label">@(Resources.DataDictionary.INNO) :</label>
+                    <NazmInputText UniqueId="inno"
+                                   CSS="form-control"
+                                   ValueProperty="@(Model.INNO)"
+                                   ValueChangedEventHandler="OnInnoValueChanged" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.INNO" />
+                    </div>
+                </div>
+
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="year" class="form-label">@(Resources.DataDictionary.Year) :</label>
+                    <InputNumber id="year" class="form-control" @bind-Value="Model.YEAR" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.YEAR" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3 ">
+                    <label for="fee" class="form-label">@(Resources.DataDictionary.FEE) :</label>
+                    <div class="@(IsFeeInvalid ? " invalid" : "") ltr-style">
+                        <NazmInputText UniqueId="fee"
+                                       CSS="form-control"
+                                       ValueProperty="@(strFEE)"
+                                       ValueChangedEventHandler="OnStrFeeValueChanged" />
+                    </div>
+                    <div class="form-control-validation rtl-style">
+                        <ValidationMessage For="() => Model.FEE" />
+                    </div>
+                    @if (IsFeeInvalid)
+                    {
+                        <span class="text-danger">@(FeeInvalidMessage)</span>
+                    }
+
+                </div>
+
+                <div class="col-md-6 px-5 mb-3 ">
+                    <label for="dis" class="form-label">@(Resources.DataDictionary.DIS) :</label>
+                    <div class="@(IsDisInvalid ? " invalid" : "") ltr-style">
+                        <NazmInputText UniqueId="dis"
+                                       CSS="form-control"
+                                       ValueProperty="@(strDIS)"
+                                       ValueChangedEventHandler="OnStrDisValueChanged" />
+                    </div>
+                    <div class="form-control-validation rtl-style">
+                        <ValidationMessage For="() => Model.DIS" />
+                    </div>
+                    @if (IsDisInvalid)
+                    {
+                        <span class="text-danger">@(DisInvalidMessage)</span>
+                    }
+
+                </div>
+
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="tinb" class="form-label">@(Resources.DataDictionary.TINB) :</label>
+                    <NazmInputText UniqueId="tinb"
+                                   CSS="form-control"
+                                   ValueProperty="@(Model.TINB)"
+                                   ValueChangedEventHandler="OnTinbValueChanged" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.TINB" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="bid" class="form-label">@(Resources.DataDictionary.BID) :</label>
+                    <NazmInputText UniqueId="bid"
+                                   CSS="form-control"
+                                   ValueProperty="@(Model.BID)"
+                                   ValueChangedEventHandler="OnBidValueChanged" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.BID" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="bpc" class="form-label">@(Resources.DataDictionary.BPC) :</label>
+                    <NazmInputText UniqueId="bpc"
+                                   CSS="form-control"
+                                   ValueProperty="@(Model.BPC)"
+                                   ValueChangedEventHandler="OnBpcValueChanged" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.BPC" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="sstid" class="form-label">@(Resources.DataDictionary.SSTID) :</label>
+                    <NazmDropDown UniqueId="sstid" CSS="form-control"
+                                  IsAllowClear="true" IsAllowFiltering="true" Placeholder="@(Resources.Messages.Validations.PleaseSelectOne)"
+                                  ValueProperty="ID" TextProperty="FULLNAME"
+                                  DataItems="@(cmbSERVICE_TYPEs)" BindValue="SstidModel.ID"
+                                  TItem="ViewModels.SERVICE_TYPEs.SERVICE_TYPEViewModel" TResult="int"
+                                  ValueChangedEventHandler="OnSERVICE_TYPEChanged" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.SSTID" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="sstt" class="form-label">@(Resources.DataDictionary.SSTT) :</label>
+                    <NazmInputText UniqueId="sstt"
+                                   CSS="form-control"
+                                   ValueProperty="@(Model.SSTT)"
+                                   ValueChangedEventHandler="OnSsttValueChanged" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.SSTT" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="vra" class="form-label">@(Resources.DataDictionary.VRA) :</label>
+                    <InputNumber id="vra" class="form-control" @bind-Value="Model.VRA" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.VRA" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="DimProduct" class="form-label">@(Resources.DataDictionary.DimProduct) :</label>
+                    <NazmDropDown UniqueId="DimProduct" CSS="form-control"
+                                  IsAllowClear="true" IsAllowFiltering="true" Placeholder="@(Resources.Messages.Validations.PleaseSelectOne)"
+                                  ValueProperty="Code" TextProperty="Name"
+                                  DataItems="@(cmbDimProducts)" BindValue="Model.FIELDCODE"
+                                  TItem="ViewModels.DimProducts.DimProductActiveViewModel" TResult="int"
+                                  ValueChangedEventHandler="OnDimProductChanged" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.FIELDCODE" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="fromDate" class="form-label">@(Resources.DataDictionary.Date) :</label>
+                    <NazmDatePickerPersian DateInput="Model.INDATIM" EventDateChanged="OnIndatimDateSetAsync" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.INDATIM" />
+                    </div>
+                </div>
+
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="Policy_No" class="form-label">@(Resources.DataDictionary.POLICY_NO) :</label>
+                    <NazmInputText UniqueId="Policy_No"
+                                   CSS="form-control"
+                                   ValueProperty="@(Model.POLICY_NO)"
+                                   ValueChangedEventHandler="OnPolicy_NoValueChanged" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.POLICY_NO" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <div class="mb-3">
+                        <label for="tob" class="form-label">@(Resources.DataDictionary.TOB) :</label>
+                        <NazmDropDown UniqueId="tob" CSS="form-control"
+                                      IsAllowClear="true" IsAllowFiltering="true" Placeholder="@(Resources.Messages.Validations.PleaseSelectOne)"
+                                      ValueProperty="Id" TextProperty="Title"
+                                      DataItems="@(cmbTOB)" BindValue="Model.TOB"
+                                      TItem="ComboClass" TResult="string"
+                                      ValueChangedEventHandler="OnTOBChanged" />
+                        <div class="form-control-validation">
+                            <ValidationMessage For="() => Model.TOB" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <div class="mb-3">
+                        <label for="setm" class="form-label">@(Resources.DataDictionary.SETM) :</label>
+                        <NazmDropDown UniqueId="setm" CSS="form-control"
+                                      IsAllowClear="true" IsAllowFiltering="true" Placeholder="@(Resources.Messages.Validations.PleaseSelectOne)"
+                                      ValueProperty="Id" TextProperty="Title"
+                                      DataItems="@(cmbSETM)" BindValue="Model.SETM"
+                                      TItem="ComboClass" TResult="string"
+                                      ValueChangedEventHandler="OnSETMChanged" />
+                        <div class="form-control-validation">
+                            <ValidationMessage For="() => Model.SETM" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <div class="mb-3">
+                        <label for="inty" class="form-label">@(Resources.DataDictionary.INTY) :</label>
+                        <NazmDropDown UniqueId="inty" CSS="form-control"
+                                      IsAllowClear="true" IsAllowFiltering="true" Placeholder="@(Resources.Messages.Validations.PleaseSelectOne)"
+                                      ValueProperty="Id" TextProperty="Title"
+                                      DataItems="@(cmbINTY)" BindValue="Model.INTY"
+                                      TItem="ComboClass" TResult="string"
+                                      ValueChangedEventHandler="OnINTYChanged" />
+                        <div class="form-control-validation">
+                            <ValidationMessage For="() => Model.INTY" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="Branch" class="form-label">@(Resources.DataDictionary.Branch) :</label>
+                    <RadzenDropDownDataGrid id="Branch" class="form-control" AllowClear="true"
+                                            AllowFiltering="true" FilterOperator="StringFilterOperator.Contains"
+                                            ValueProperty="Code" TextProperty="FullName" Placeholder="@(Resources.Messages.Validations.PleaseSelectOne)"
+                                            Data="@(cmbBranches)" @bind-Value="@(Model.BRANCH_ID)" Change="(args) => OnBranchChanged(args)"
+                                            PagerAlwaysVisible="true" ShowPagingSummary="true" PagingSummaryFormat="@(Resources.Messages.Common.PagingSummaryFormat)"
+                                            SearchTextPlaceholder="@(Resources.DataDictionary.Filter)">
+                        <Columns>
+                            <RadzenDropDownDataGridColumn Property="FullName" Title="@(Resources.DataDictionary.Title)" Filterable="true" Sortable="false" />
+                        </Columns>
+                    </RadzenDropDownDataGrid>
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.BRANCH_ID" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="InvoiceModel" class="form-label">@(Resources.DataDictionary.InvoiceModel) :</label>
+                    <NazmDropDown UniqueId="InvoiceModel" CSS="form-control"
+                                  IsAllowClear="true" IsAllowFiltering="true" Placeholder="@(Resources.Messages.Validations.PleaseSelectOne)"
+                                  ValueProperty="Id" TextProperty="Name"
+                                  DataItems="@(cmbInvoiceModels)" BindValue="Model.INVOICE_MODELID"
+                                  TItem="ViewModels.InvoiceModels.InvoiceModelActiveViewModel" TResult="int"
+                                  ValueChangedEventHandler="OnInvoiceModelChanged" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.INVOICE_MODELID" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="Netsale" class="form-label">@(Resources.DataDictionary.Netsale) :</label>
+                    <RadzenDropDownDataGrid id="Netsale" class="form-control" AllowClear="true"
+                                            AllowFiltering="true" FilterOperator="StringFilterOperator.Contains"
+                                            ValueProperty="Code" TextProperty="FullName" Placeholder="@(Resources.Messages.Validations.PleaseSelectOne)"
+                                            Data="@(cmbNetsales)" @bind-Value="@(intAgentId)" Change="(args) => OnNetsaleChanged(args)"
+                                            PagerAlwaysVisible="true" ShowPagingSummary="true" PagingSummaryFormat="@(Resources.Messages.Common.PagingSummaryFormat)"
+                                            SearchTextPlaceholder="@(Resources.DataDictionary.Filter)">
+                        <Columns>
+                            <RadzenDropDownDataGridColumn Property="FullName" Title="@(Resources.DataDictionary.Title)" Filterable="true" Sortable="false" />
+                        </Columns>
+                    </RadzenDropDownDataGrid>
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => intAgentId" />
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mb-3 float-start">
+                <button type="button" class="btn btn-danger btn-sm" title="@(Resources.Buttons.Return)" @onclick="ReturnToList">
+                    <i class="@(Resources.ButtonsIcon.Return) @(Resources.DefaultValues.IconSize24)"></i>
+                </button>
+
+                <button type="submit" class="btn btn-primary btn-sm" title="@(Resources.Buttons.Save)">
+                    <i class="@(Resources.ButtonsIcon.Save) @(Resources.DefaultValues.IconSize24)"></i>
+                </button>
+
+                @if (Errors != null)
+                {
+                    <hr />
+                    <div class="alert alert-danger" role="alert">
+                        @(Errors)
+                    </div>
+                }
+            </div>
+
+        </EditForm>
+    </div>
+</div>
+
+
+@code
+{
+    // ********************
+    #region Properties
+
+    [Parameter]
+    public int? refMenuId { get; set; }
+
+    [Parameter]
+    public ViewModels.TaxOrganizationSales.TaxOrganizationSaleViewModel Model { get; set; }
+
+    [Parameter]
+    public Infrastructure.Enums.EditFormType Type { get; set; }
+
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+
+    [Parameter]
+    public List<string> Errors { get; set; }
+
+    [Parameter]
+    public int? refIsReturned { get; set; }
+    [Parameter]
+    public int? refBranchId { get; set; }
+    [Parameter]
+    public int? refInvoiceModelId { get; set; }
+    [Parameter]
+    public int? refNetsaleId { get; set; }
+    [Parameter]
+    public int? refDimProductId { get; set; }
+    [Parameter]
+    public long? refInno { get; set; }
+    [Parameter]
+    public string refBid { get; set; }
+    [Parameter]
+    public string refTinb { get; set; }
+    [Parameter]
+    public string refPolicyNo { get; set; }
+    [Parameter]
+    public int? refStatus { get; set; }
+    [Parameter]
+    public int? refYear { get; set; }
+    [Parameter]
+    public int? refSeason { get; set; }
+    [Parameter]
+    public int? refMonth { get; set; }
+
+    public List<ComboClass> cmbSETM { get; set; }
+    public List<ComboClass> cmbTOB { get; set; }
+    public List<ComboClass> cmbINTY { get; set; }
+    public IEnumerable<ViewModels.Branchs.BranchActiveViewModel> cmbBranches { get; set; }
+    public IEnumerable<ViewModels.InvoiceModels.InvoiceModelActiveViewModel> cmbInvoiceModels { get; set; }
+    public IEnumerable<ViewModels.Netsales.NetsaleActiveViewModel> cmbNetsales { get; set; }
+    public IEnumerable<ViewModels.DimProducts.DimProductActiveViewModel> cmbDimProducts { get; set; }
+    public IEnumerable<ViewModels.SERVICE_TYPEs.SERVICE_TYPEViewModel> cmbSERVICE_TYPEs { get; set; }
+
+    private string strFEE { get; set; }
+    private bool IsFeeInvalid { get; set; }
+    private string FeeInvalidMessage { get; set; }
+
+    private string strDIS { get; set; }
+    private bool IsDisInvalid { get; set; }
+    private string DisInvalidMessage { get; set; }
+
+    private int? intAgentId { get; set; }
+
+    public ViewModels.SERVICE_TYPEs.SERVICE_TYPEViewModel SstidModel { get; set; }
+
+    public PersianCalendar PersianCalendar { get; set; }
+
+    public bool IsFormProgressing { get; set; }
+    #endregion
+
+    // ********************
+    #region Events
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsFormProgressing = true;
+        // ********************
+        await base.OnInitializedAsync();
+
+        PersianCalendar = new PersianCalendar();
+
+        SstidModel = new ViewModels.SERVICE_TYPEs.SERVICE_TYPEViewModel();
+
+        if (Model.INDATIM.Year < 2010)
+        {
+            await OnIndatimDateSetAsync(Nazm.DateTime.Now);
+
+        }
+
+        Model.DIS = Model.DIS != null ? Model.DIS : 0;
+
+
+        await OnStrFeeValueChanged(Model.FEE.ToString());
+        await OnStrDisValueChanged(Model.DIS.ToString());
+        await OnNetsaleChanged(Model.AGENT_ID);
+
+        if (Type == Infrastructure.Enums.EditFormType.Create)
+        {
+            if(Model.VRA == null)
+            {
+                Model.VRA = 10;
+                Model.BPC = "1111111111";
+                Model.SETM = 1;
+            }
+
+            Model.YEAR = refYear.Value;
+            if (Model.YEAR != Nazm.DateConversionClass.GetInstance().GetPersianDateYearNumber(Nazm.DateTime.Now))
+                Model.INDATIM = PersianCalendar.ToDateTime(Model.YEAR, 1, 1, 0, 0, 0, 0);
+
+        }
+
+        cmbSETM = new List<ComboClass>();
+        cmbTOB = new List<ComboClass>();
+        cmbINTY = new List<ComboClass>();
+
+        await bindSETM();
+        await bindTOB();
+        await bindINTY();
+        await bindBranches();
+        await bindInvoiceModels();
+        await bindNetsales();
+        await bindDimProducts();
+        await bindSERVICE_TYPEs();
+
+        if(Model.SSTID != null && Model.SSTID != string.Empty)
+        {
+            SstidModel.ID = cmbSERVICE_TYPEs.FirstOrDefault(s => s.SSTID == long.Parse(Model.SSTID)).ID;
+            //await OnSERVICE_TYPEChanged(cmbSERVICE_TYPEs.FirstOrDefault(s => s.SSTID == long.Parse(Model.SSTID)).ID);
+        }
+
+        // if (Model.SSTID != null && Model.SSTID != string.Empty)
+        //     Model. = long.Parse(Model.SSTID);
+
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task bindSETM()
+    {
+        // ViewModels.Shared.PublicViewModel inputParamsViewModel = new ViewModels.Shared.PublicViewModel()
+        //     {
+        //         PageSize = Infrastructure.Utility.PageSizeCombo,
+        //         MenuId = refMenuId.Value,
+        //     };
+
+        // var varRegulationsResult = await RegulationsService.FetchAsync(inputParamsViewModel);
+        // if (varRegulationsResult != null)
+        // {
+        //     if (varRegulationsResult.IsSuccess)
+        //     {
+        //         cmbRegulation = varRegulationsResult.Value.Items;
+        //     }
+        // }
+
+        cmbSETM = new List<ComboClass>
+        {
+            new ComboClass
+            {
+                Id = 1,
+                Title = "نقد",
+            },
+            new ComboClass
+            {
+                Id = 2,
+                Title = "نسیه",
+            },
+            new ComboClass
+            {
+                Id = 3,
+                Title = "نقد / نسیه",
+            },
+        };
+    }
+
+    private async Task bindTOB()
+    {
+        // ViewModels.Shared.PublicViewModel inputParamsViewModel = new ViewModels.Shared.PublicViewModel()
+        //     {
+        //         PageSize = Infrastructure.Utility.PageSizeCombo,
+        //         MenuId = refMenuId.Value,
+        //     };
+
+        // var varRegulationsResult = await RegulationsService.FetchAsync(inputParamsViewModel);
+        // if (varRegulationsResult != null)
+        // {
+        //     if (varRegulationsResult.IsSuccess)
+        //     {
+        //         cmbRegulation = varRegulationsResult.Value.Items;
+        //     }
+        // }
+
+        cmbTOB = new List<ComboClass>
+        {
+            new ComboClass
+            {
+                Id = 1,
+                Title = "حقیقی",
+            },
+            new ComboClass
+            {
+                Id = 2,
+                Title = "حقوقی",
+            },
+            new ComboClass
+            {
+                Id = 3,
+                Title = "مشارکت مدنی",
+            },
+            new ComboClass
+            {
+                Id = 4,
+                Title = "اتباع غیر ایرانی",
+            },
+        };
+    }
+
+    private async Task bindINTY()
+    {
+        // ViewModels.Shared.PublicViewModel inputParamsViewModel = new ViewModels.Shared.PublicViewModel()
+        //     {
+        //         PageSize = Infrastructure.Utility.PageSizeCombo,
+        //         MenuId = refMenuId.Value,
+        //     };
+
+        // var varRegulationsResult = await RegulationsService.FetchAsync(inputParamsViewModel);
+        // if (varRegulationsResult != null)
+        // {
+        //     if (varRegulationsResult.IsSuccess)
+        //     {
+        //         cmbRegulation = varRegulationsResult.Value.Items;
+        //     }
+        // }
+
+        cmbINTY = new List<ComboClass>
+        {
+            new ComboClass
+            {
+                Id = 1,
+                Title = "اطلاعات کامل",
+            },
+            new ComboClass
+            {
+                Id = 2,
+                Title = "بدون اطلاعات خریدار",
+            },
+        };
+    }
+
+    private async Task bindBranches()
+    {
+
+        ViewModels.Shared.PublicViewModel branchInputParamsViewModel = new ViewModels.Shared.PublicViewModel()
+            {
+                PageSize = Infrastructure.Utility.PageSizeMax,
+            };
+        var varBranchesResult = await BranchsService.FetchActiveAsync(branchInputParamsViewModel);
+        if (varBranchesResult != null)
+        {
+            cmbBranches = varBranchesResult.Value.Items;
+        }
+
+    }
+
+    private async Task bindInvoiceModels()
+    {
+        ViewModels.Shared.PublicViewModel branchInputParamsViewModel = new ViewModels.Shared.PublicViewModel()
+            {
+                PageSize = Infrastructure.Utility.PageSizeMax,
+            };
+        var varInvoiceModelsResult = await InvoiceModelsService.FetchActiveAsync(branchInputParamsViewModel);
+        if (varInvoiceModelsResult != null)
+        {
+            cmbInvoiceModels = varInvoiceModelsResult.Value.Items;
+        }
+    }
+
+    private async Task bindNetsales()
+    {
+        ViewModels.Shared.PublicViewModel branchInputParamsViewModel = new ViewModels.Shared.PublicViewModel()
+            {
+                PageSize = Infrastructure.Utility.PageSizeMax,
+            };
+        var varNetsalesResult = await NetsalesService.FetchActiveAsync(branchInputParamsViewModel);
+        if (varNetsalesResult != null)
+        {
+            cmbNetsales = varNetsalesResult.Value.Items;
+        }
+    }
+
+    private async Task bindDimProducts()
+    {
+        ViewModels.Shared.PublicViewModel branchInputParamsViewModel = new ViewModels.Shared.PublicViewModel()
+            {
+                PageSize = Infrastructure.Utility.PageSizeMax,
+            };
+        var varDimProductsResult = await DimProductsService.FetchActiveAsync(branchInputParamsViewModel);
+        if (varDimProductsResult != null)
+        {
+            cmbDimProducts = varDimProductsResult.Value.Items;
+        }
+    }
+
+    private async Task bindSERVICE_TYPEs()
+    {
+        ViewModels.Shared.PublicViewModel SERVICE_TYPEsInputParamsViewModel = new ViewModels.Shared.PublicViewModel()
+        {
+            PageSize = Infrastructure.Utility.PageSizeMax,
+        };
+        var varSERVICE_TYPEsResult = await SERVICE_TYPEsService.FetchAsync(SERVICE_TYPEsInputParamsViewModel);
+        if (varSERVICE_TYPEsResult != null)
+        {
+            cmbSERVICE_TYPEs = varSERVICE_TYPEsResult.Value.Items;
+        }
+    }
+
+    private async Task OnBranchChanged(object args)
+    {
+        Model.BRANCH_ID = (args != null) ? int.Parse(args.ToString()) : 0;
+    }
+
+    private async Task OnInvoiceModelChanged(dynamic value)
+    {
+        var invoiceModel = cmbInvoiceModels.FirstOrDefault(i => i.Id == value);
+
+        Model.INVOICE_MODELID = value != null ? value : 0;
+        Model.INVOICE_MODEL = invoiceModel.LatinName;
+        Model.INSUTP = invoiceModel.INSUTP;
+    }
+
+    private async Task OnNetsaleChanged(object args)
+    {
+        Model.AGENT_ID = (args != null) ? args.ToString() : "";
+        intAgentId = int.Parse(Model.AGENT_ID != "" ? Model.AGENT_ID : "-1");
+    }
+
+    private async Task OnDimProductChanged(dynamic value)
+    {
+        var fieldModel = cmbDimProducts.FirstOrDefault(i => i.Code == value);
+        Model.FIELDCODE = value != null ? value : 0;
+        Model.MAPFLDDTLCOD = fieldModel.MAPFLDDTLCOD;
+    }
+
+    private async Task OnSERVICE_TYPEChanged(dynamic value)
+    {
+        SstidModel = cmbSERVICE_TYPEs.FirstOrDefault(i => i.ID == value);
+        Model.SSTID = SstidModel.SSTID.ToString();
+        Model.SSTT = SstidModel.SSTT;
+        Model.VRA = SstidModel.VRA;
+        Model.FIELDCODE = SstidModel.FIELDCODE;
+        await OnDimProductChanged(Model.FIELDCODE);
+    }
+
+    private async Task OnIndatimDateSetAsync(DateTime? datatime)
+    {
+        Model.INDATIM = new DateTime(datatime.Value.Year, datatime.Value.Month, datatime.Value.Day);
+        var persianDate = Nazm.DateConversionClass.GetInstance().GetPersianDate(datatime.Value);
+
+        var lstPersianDate = persianDate.Where(c => c != '/').ToList();
+
+        var filteredPersianDate = string.Concat(lstPersianDate);
+
+        Model.DATM = Model.NEWDATA = int.Parse(filteredPersianDate);
+    }
+
+    private async Task OnBidValueChanged(string value)
+    {
+        Model.BID = value;
+    }
+
+    private async Task OnInnoValueChanged(string value)
+    {
+        Model.INNO = value;
+    }
+
+    private async Task OnStrFeeValueChanged(string value)
+    {
+        IsFeeInvalid = FeeValidation(value);
+
+
+        if (!IsFeeInvalid)
+        {
+            strFEE = UtilityClass.setSeparatedDigits(Model.FEE.ToString());
+        }
+    }
+
+    private async Task OnStrDisValueChanged(string value)
+    {
+        var response = DisValidation(value);
+
+        if (response != null)
+        {
+            IsDisInvalid = response.Value;
+
+            if (!IsDisInvalid)
+            {
+                strDIS = UtilityClass.setSeparatedDigits(Model.DIS.ToString());
+            }
+
+        }
+        else
+        {
+            Model.DIS = 0;
+            strDIS = "0";
+        }
+
+    }
+
+    private bool FeeValidation(string? fee)
+    {
+        if (!(fee != "" && fee != null))
+        {
+            FeeInvalidMessage = string.Format(Resources.Messages.Validations.Required, Resources.DataDictionary.FEE);
+            return true;
+        }
+
+        var lstFee = fee.Where(c => c != ',').ToList();
+
+        var filteredFee = string.Concat(lstFee);
+
+        double numFEE;
+        double.TryParse(filteredFee, out numFEE);
+
+        if (!double.TryParse(filteredFee.ToString(), out numFEE))
+        {
+            FeeInvalidMessage = string.Format(Resources.Messages.Validations.NumberOnly, Resources.DataDictionary.FEE);
+            return true;
+        }
+        if (numFEE < 0)
+        {
+            FeeInvalidMessage = string.Format(Resources.Messages.Validations.GreaterThanOrEqualTo_FieldValue, Resources.DataDictionary.FEE, "0");
+            return true;
+        }
+        else
+        {
+            Model.FEE = numFEE;
+            return false;
+        }
+    }
+
+    private bool? DisValidation(string? dis)
+    {
+        if (dis != "" && dis != null && dis != "0")
+        {
+            var lstDis = dis.Where(c => c != ',').ToList();
+
+            var filteredDis = string.Concat(lstDis);
+
+            double numDIS;
+            double.TryParse(filteredDis, out numDIS);
+
+            if (!double.TryParse(filteredDis.ToString(), out numDIS))
+            {
+                DisInvalidMessage = string.Format(Resources.Messages.Validations.NumberOnly, Resources.DataDictionary.DIS);
+                return true;
+            }
+            if (numDIS < 0)
+            {
+                DisInvalidMessage = string.Format(Resources.Messages.Validations.GreaterThanOrEqualTo_FieldValue, Resources.DataDictionary.DIS, "0");
+                return true;
+            }
+            else
+            {
+                Model.DIS = numDIS;
+                return false;
+            }
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    private void OnTOBChanged(dynamic value)
+    {
+        Model.TOB = value;
+    }
+
+    private void OnSETMChanged(dynamic value)
+    {
+        Model.SETM = value;
+    }
+
+
+    private async Task OnTinbValueChanged(string value)
+    {
+        Model.TINB = value;
+    }
+
+    private void OnINTYChanged(dynamic value)
+    {
+        Model.INTY = value;
+    }
+
+    private async Task OnPolicy_NoValueChanged(string value)
+    {
+        Model.POLICY_NO = value;
+    }
+
+    private async Task OnBpcValueChanged(string value)
+    {
+        Model.BPC = value;
+    }
+
+
+    private async Task OnSsttValueChanged(string value)
+    {
+        Model.SSTT = value;
+    }
+
+    private void HandleValidSubmitAsync()
+    {
+        var result = OnValidSubmit.InvokeAsync(null);
+    }
+
+    private void ReturnToList()
+    {
+        string uri = $"{Infrastructure.Utility.setUri<Client.Pages.TaxOrganizationSales.List>()}/{refMenuId.Value}/{refIsReturned}/{refBranchId}/{refInvoiceModelId}/{refNetsaleId}/{refDimProductId}/{refInno}/{refBid}/{refTinb}/{refPolicyNo}/{refStatus}/{refYear}/{refSeason}/{refMonth}";
+        NavigationManager.NavigateTo(uri: uri, forceLoad: false);
+    }
+
+    #endregion
+}
+
+
+
+
+

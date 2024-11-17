@@ -1,0 +1,221 @@
+﻿@page "/TaxOrganizationSales/Create/{refMenuId:int?}/{refIsReturned:int?}/{refBranchId:int?}/{refInvoiceModelId:int?}/{refNetsaleId:int?}/{refDimProductId:int?}/{refInno:long?}/{refBid?}/{refTinb?}/{refPolicyNo?}/{refStatus:int?}/{refYear:int?}/{refSeason:int?}/{refMonth:int?}/{Id:int?}"
+@*  *@
+
+@inject NavigationManager NavigationManager;
+@inject Infrastructure.NotificationSettings NotificationSettingsClass;
+
+@inject Services.TaxOrganizationSalesService TaxOrganizationSalesService;
+
+
+@if (IsFormLoading)
+{
+    <NazmLoading IsShow="true" />
+}
+else
+{
+
+    @if (IsFormProgressing)
+    {
+        <NazmLoadingProgress IsShow="true"/>
+    }
+
+    @if (refMenuId != null)
+    {
+        <FormEditor Model="Model"
+            OnValidSubmit="OnSubmitAsync"
+            Type="Infrastructure.Enums.EditFormType.Create"
+            refMenuId="refMenuId"
+            refIsReturned="refIsReturned"
+            refBranchId="refBranchId"
+            refInvoiceModelId="refInvoiceModelId"
+            refNetsaleId="refNetsaleId"
+            refDimProductId="refDimProductId"
+            refInno="refInno"
+            refBid="@(refBid)"
+            refTinb="@(refTinb)"
+            refPolicyNo="@(refPolicyNo)"
+            refStatus="@(refStatus)"
+            refYear="refYear"
+            refSeason="refSeason"
+            refMonth="refMonth">
+
+        </FormEditor>
+
+    }
+}
+
+<NazmNotification NotificationSettings="@(lstNotifications)" />
+
+
+
+
+@code
+{
+    // ********************
+    #region Properties
+
+    [Parameter]
+    public int? refMenuId { get; set; }
+
+    [Parameter]
+    public int? Id { get; set; }
+
+    [Parameter]
+    public int? refIsReturned { get; set; }
+    [Parameter]
+    public int? refBranchId { get; set; }
+    [Parameter]
+    public int? refInvoiceModelId { get; set; }
+    [Parameter]
+    public int? refNetsaleId { get; set; }
+    [Parameter]
+    public int? refDimProductId { get; set; }
+    [Parameter]
+    public long? refInno { get; set; }
+    [Parameter]
+    public string refBid { get; set; }
+    [Parameter]
+    public string refTinb { get; set; }
+    [Parameter]
+    public string refPolicyNo { get; set; }
+    [Parameter]
+    public int? refStatus { get; set; }
+    [Parameter]
+    public int? refYear { get; set; }
+    [Parameter]
+    public int? refSeason { get; set; }
+    [Parameter]
+    public int? refMonth { get; set; }
+
+    public bool IsFormLoading { get; set; }
+    public bool IsFormProgressing { get; set; }
+
+    private List<Infrastructure.NotificationSettings> lstNotifications { get; set; }
+
+
+    public ViewModels.TaxOrganizationSales.TaxOrganizationSaleViewModel Model { get; set; }
+    private ViewModels.TaxOrganizationSales.TaxOrganizationSaleCreateViewModel NewModel { get; set; }
+
+    #endregion
+
+    // ********************
+    #region Events
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsFormLoading = true;
+        // ********************
+        await base.OnInitializedAsync();
+        Model = new ViewModels.TaxOrganizationSales.TaxOrganizationSaleViewModel();
+
+        lstNotifications = new List<Infrastructure.NotificationSettings>();
+        // ********************
+        IsFormLoading = false;
+
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        IsFormLoading = true;
+        // ********************
+
+        if(Id != null)
+        {
+            try
+            {
+                if (refMenuId != null && Id != null)
+                    Model = await TaxOrganizationSalesService.FindByIdAsync(Id.Value);
+            }
+            catch (Exception ex)
+            {
+                string str = ex.Message;
+            }
+        }
+
+        // ********************
+        IsFormLoading = false;
+
+    }
+
+    private async Task OnSubmitAsync()
+    {
+        IsFormProgressing = true;
+        // ********************
+        bool flagResult = await SaveAsync();
+        if (flagResult)
+        {
+            string uri = $"{Infrastructure.Utility.setUri<Client.Pages.TaxOrganizationSales.List>()}/{refMenuId.Value}/{refIsReturned.Value}/{refBranchId.Value}/{refInvoiceModelId.Value}/{refNetsaleId.Value}/{refDimProductId.Value}/{refInno.Value}/{refBid}/{refTinb}/{refPolicyNo}/{refStatus}/{refYear.Value}/{refSeason.Value}/{refMonth.Value}";
+            NavigationManager.NavigateTo(uri: uri, forceLoad: false);
+        }
+        // ********************
+        IsFormProgressing = false;
+
+    }
+
+    private async Task<bool> SaveAsync()
+    {
+        NewModel = new ViewModels.TaxOrganizationSales.TaxOrganizationSaleCreateViewModel()
+        {
+            YEAR= Model.YEAR,
+            INNO= Model.INNO,
+            INDATIM= Model.INDATIM,
+			FEE= Model.FEE,
+            BID= Model.BID,
+            TOB= Model.TOB,
+            SETM= Model.SETM,
+            TINB= Model.TINB,
+            BPC= Model.BPC,
+            INTY= Model.INTY,
+            SSTID= Model.SSTID,
+            SSTT= Model.SSTT,
+            VRA= Model.VRA.Value,
+			DIS = Model.DIS,
+            POLICY_NO = Model.POLICY_NO,
+            INSUTP = Model.INSUTP,
+            DATM = Model.DATM,
+            NEWDATA = Model.NEWDATA,
+            BRANCH_ID = Model.BRANCH_ID,
+            AGENT_ID = Model.AGENT_ID,
+            FIELDCODE = Model.FIELDCODE,
+            INVOICE_MODELID = Model.INVOICE_MODELID,
+            MAPFLDDTLCOD = Model.MAPFLDDTLCOD,
+            INVOICE_MODEL = Model.INVOICE_MODEL,
+            //TINS= Model.TINS,
+            //TPRDIS = Model.TPRDIS,
+            //TADIS = Model.TADIS,
+            //TVAM = Model.TVAM,
+            //TBILL = Model.TBILL,
+            //PRDIS = Model.PRDIS,
+            //ADIS = Model.ADIS,
+            //VAM = Model.VAM,
+            //TSSTAM = Model.TSSTAM,
+            //INNO_TYPE = 0,
+
+        };
+
+        var varResult = await TaxOrganizationSalesService.PostAsync(NewModel);
+        bool flagReturn = false;
+        if (varResult != null)
+        {
+
+            lstNotifications.Clear();
+            flagReturn = varResult.IsSuccess;
+            if (varResult.IsSuccess)
+            {
+                if (varResult.Successes.Count() > 0)
+                    lstNotifications.AddRange(NotificationSettingsClass.setNotificationsList
+                        (varResult.Successes, Infrastructure.Enums.MessageType.Success));
+            }
+            if (varResult.IsFailed)
+            {
+                if (varResult.Errors.Count() > 0)
+                    lstNotifications.AddRange(NotificationSettingsClass.setNotificationsList
+                        (varResult.Errors, Infrastructure.Enums.MessageType.Error));
+            }
+        }
+
+        return flagReturn;
+    }
+
+    #endregion
+}

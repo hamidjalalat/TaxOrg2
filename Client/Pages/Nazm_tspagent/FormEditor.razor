@@ -1,0 +1,355 @@
+﻿@inject NavigationManager NavigationManager;
+
+@inject Services.Nazm_tspagentsService Nazm_tspagentsService;
+
+
+<div class="">
+    <div class="row mr-5">
+        <EditForm Model="Model" OnValidSubmit="HandleValidSubmitAsync">
+            <FluentValidationValidator />
+            <DataAnnotationsValidator />
+            <div class="row">
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="inno" class="form-label">@(Resources.DataDictionary.INNO) :</label>
+                    <InputNumber id="inno" class="form-control" @bind-Value="Model.inno" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.inno" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="dis" class="form-label">@(Resources.DataDictionary.DIS) :</label>
+                    <InputNumber id="dis" class="form-control" @bind-Value="Model.dis" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.dis" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="ins" class="form-label">@(Resources.DataDictionary.INS) :</label>
+                    <InputNumber id="ins" class="form-control" @bind-Value="Model.ins" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.ins" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="vra" class="form-label">@(Resources.DataDictionary.VRA) :</label>
+                    <InputNumber id="vra" class="form-control" @bind-Value="Model.vra" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.vra" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="bid" class="form-label">@(Resources.DataDictionary.BID) :</label>
+                    <NazmInputText UniqueId="bid"
+                                   CSS="form-control"
+                                   ValueProperty="@(Model.bid)"
+                                   ValueChangedEventHandler="OnBidValueChanged" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.bid" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="bpc" class="form-label">@(Resources.DataDictionary.BPC) :</label>
+                    <NazmInputText UniqueId="bpc"
+                                   CSS="form-control"
+                                   ValueProperty="@(Model.bpc)"
+                                   ValueChangedEventHandler="OnBpcValueChanged" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.bpc" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="sstt" class="form-label">@(Resources.DataDictionary.SSTT) :</label>
+                    <NazmInputText UniqueId="sstt"
+                                   CSS="form-control"
+                                   ValueProperty="@(Model.sstt)"
+                                   ValueChangedEventHandler="OnSsttValueChanged" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.sstt" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="tins" class="form-label">@(Resources.DataDictionary.TINS) :</label>
+                    <NazmInputText UniqueId="tins"
+                                   CSS="form-control"
+                                   ValueProperty="@(Model.tins)"
+                                   ValueChangedEventHandler="OnTinsValueChanged" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.tins" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="sstid" class="form-label">@(Resources.DataDictionary.SSTID) :</label>
+                    <NazmInputText UniqueId="sstid"
+                                   CSS="form-control"
+                                   ValueProperty="@(Model.sstid)"
+                                   ValueChangedEventHandler="OnSstidValueChanged" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.sstid" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="fromDate" class="form-label">@(Resources.DataDictionary.Date) :</label>
+                    <NazmDatePickerPersian DateInput="Model.indatim" EventDateChanged="OnIndatimDateSetAsync" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.indatim" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="tob" class="form-label">@(Resources.DataDictionary.TOB) :</label>
+                    <InputNumber id="tob" class="form-control" @bind-Value="Model.tob" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.tob" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="setm" class="form-label">@(Resources.DataDictionary.SETM) :</label>
+                    <InputNumber id="setm" class="form-control" @bind-Value="Model.setm" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.setm" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="tinb" class="form-label">@(Resources.DataDictionary.TINB) :</label>
+                    <NazmInputText UniqueId="tinb"
+                                   CSS="form-control"
+                                   ValueProperty="@(Model.tinb)"
+                                   ValueChangedEventHandler="OnTinbValueChanged" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.tinb" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="inty" class="form-label">@(Resources.DataDictionary.INTY) :</label>
+                    <InputNumber id="inty" class="form-control" @bind-Value="Model.inty" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.inty" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="ft" class="form-label">@(Resources.DataDictionary.ft) :</label>
+                    <InputNumber id="ft" class="form-control" @bind-Value="Model.ft" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.ft" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="inp" class="form-label">@(Resources.DataDictionary.inp) :</label>
+                    <InputNumber id="inp" class="form-control" @bind-Value="Model.inp" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.inp" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="am" class="form-label">@(Resources.DataDictionary.am) :</label>
+                    <InputNumber id="am" class="form-control" @bind-Value="Model.am" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.am" />
+                    </div>
+                </div>
+
+
+                <div class="col-md-6 px-5 mb-3">
+                    <label for="Policy_No" class="form-label">@(Resources.DataDictionary.POLICY_NO) :</label>
+                    <NazmInputText UniqueId="Policy_No"
+                                   CSS="form-control"
+                                   ValueProperty="@(Model.Policy_No)"
+                                   ValueChangedEventHandler="OnPolicy_NoValueChanged" />
+                    <div class="form-control-validation">
+                        <ValidationMessage For="() => Model.Policy_No" />
+                    </div>
+                </div>
+            </div> 
+
+
+
+            <div class="mb-3 float-start">
+                <button type="button" class="btn btn-danger btn-sm" title="@(Resources.Buttons.Return)" @onclick="ReturnToList">
+                    <i class="@(Resources.ButtonsIcon.Return) @(Resources.DefaultValues.IconSize24)"></i>
+                </button>
+
+                <button type="submit" class="btn btn-primary btn-sm" title="@(Resources.Buttons.Save)">
+                    <i class="@(Resources.ButtonsIcon.Save) @(Resources.DefaultValues.IconSize24)"></i>
+                </button>
+
+                @if (Errors != null)
+                {
+                    <hr />
+                    <div class="alert alert-danger" role="alert">
+                        @(Errors)
+                    </div>
+                }
+            </div> 
+
+        </EditForm>
+    </div>
+</div>
+
+
+@code
+{
+    // ********************
+    #region Properties
+
+    [Parameter]
+    public int? refMenuId { get; set; }
+
+    [Parameter]
+    public ViewModels.Nazm_tspagents.Nazm_tspagentViewModel Model { get; set; }
+
+    [Parameter]
+    public Infrastructure.Enums.EditFormType Type { get; set; }
+
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+
+    [Parameter]
+    public List<string> Errors { get; set; }
+
+    [Parameter]
+    public int? refIsReturned { get; set; }
+    [Parameter]
+    public int? refBranchId { get; set; }
+    [Parameter]
+    public int? refInvoiceModelId { get; set; }
+    [Parameter]
+    public int? refNetsaleId { get; set; }
+    [Parameter]
+    public int? refDimProductId { get; set; }
+    [Parameter]
+    public long? refInno { get; set; }
+    [Parameter]
+    public string refBid { get; set; }
+    [Parameter]
+    public string refBpc { get; set; }
+    [Parameter]
+    public string refPolicyNo { get; set; }
+    [Parameter]
+    public int? refStatus { get; set; }
+    [Parameter]
+    public int? refYear { get; set; }
+    [Parameter]
+    public int? refSeason { get; set; }
+    [Parameter]
+    public int? refMonth { get; set; }
+
+    #endregion
+
+    // ********************
+    #region Events
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if(Model.indatim == null)
+        {
+            await OnIndatimDateSetAsync(Nazm.DateTime.Now);
+            
+        }
+
+
+    }
+
+    private async Task OnTinsValueChanged(string value)
+    {
+        Model.tins = value;
+    }
+
+    private async Task OnIndatimDateSetAsync(DateTime? datatime)
+    {
+
+        Model.indatim = datatime;
+        
+    }
+
+    private async Task OnBidValueChanged(string value)
+    {
+        Model.bid = value;
+    }
+
+    private async Task OnTinbValueChanged(string value)
+    {
+        Model.tinb = value;
+    }
+
+    private async Task OnPolicy_NoValueChanged(string value)
+    {
+        Model.Policy_No = value;
+    }
+
+    private async Task OnBpcValueChanged(string value)
+    {
+        Model.bpc = value;
+    }
+
+    private async Task OnSstidValueChanged(string value)
+    {
+        Model.sstid = value;
+    }
+
+    private async Task OnSsttValueChanged(string value)
+    {
+        Model.sstt = value;
+    }
+
+    // private async Task OnTaxIdValueChanged(string value)
+    // {
+    //     Model.TaxId = value;
+    // }
+
+    // private async Task OnReference_IdValueChanged(string value)
+    // {
+    //     Model.Reference_Id = value;
+    // }
+
+    private void HandleValidSubmitAsync()
+    {
+        var result = OnValidSubmit.InvokeAsync(null);
+    }
+
+    private void ReturnToList()
+    {
+        string uri = $"{Infrastructure.Utility.setUri<Client.Pages.Nazm_tspagent.List>()}/{refMenuId.Value}/{refIsReturned}/{refBranchId}/{refInvoiceModelId}/{refNetsaleId}/{refDimProductId}/{refInno}/{refBid}/{refBpc}/{refPolicyNo}/{refStatus}/{refYear}/{refSeason}/{refMonth}";
+        NavigationManager.NavigateTo(uri: uri, forceLoad: false);
+    }
+
+    // private async Task OnModelStatusChange(ChangeEventArgs args)
+    // {
+    //     Model.Status = ((int)((Domain.Enums.StatusEnum)Enum.Parse(typeof(Domain.Enums.StatusEnum), args.Value.ToString()))).ToString();
+
+    // }
+
+    #endregion
+}
+
+@*
+            <div class="mb-3">
+                <label for="nazmActiveInActive" class="form-label">@(Resources.DataDictionary.IsActive) :</label>
+                <NazmActiveInactive
+                    Model="@(Model.IsActive)"
+                    InputRadioGroupId="nazmActiveInActive"
+                    OnEventChange="OnIsActiveChange" />
+                <div class="form-control-validation">
+                    <ValidationMessage For="() => Model.IsActive" />
+                </div>
+            </div>
+*@
+
+
+

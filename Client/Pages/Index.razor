@@ -1,0 +1,357 @@
+﻿@*@page "/"*@
+@page "/Index/{refMenuId:int?}"
+
+@inject Infrastructure.Utility UtilityClass;
+@inject Infrastructure.NotificationSettings NotificationSettingsClass;
+
+@inject Services.Tokens.ITokensService TokenService;
+@inject Services.UserManagesService UserManagesService;
+
+@inject Services.STATUS_COUNTsService STATUS_COUNTsService;
+
+@using System.Globalization
+
+@if (IsShowLoading)
+{
+    <NazmLoading IsShow="true" />
+}
+else
+{
+    @if (IsFormProgressing)
+    {
+        <NazmLoadingProgress IsShow="true" />
+    }
+
+    <div class="row">
+        <div class="col-12">
+
+            <div class="row mb-3">
+                <div class="col-sm-3">
+                    <div class="mb-3">
+                        <label for="SelectedYear" class="form-label">@(Resources.DataDictionary.DateShYear) :</label>
+                        <div class="@(IsYearInvalid ? "invalid" : "")">
+                            <NazmDropDown UniqueId="year" CSS="form-control"
+                                            IsAllowClear="true" IsAllowFiltering="true" Placeholder="@(Resources.Messages.Validations.PleaseSelectOne)"
+                                            ValueProperty="Id" TextProperty="Title"
+                                            DataItems="@(cmbYears)" BindValue="SelectedYear"
+                                            TItem="Infrastructure.ComboClass" TResult="int"
+                                            ValueChangedEventHandler="OnYearChanged" />
+                        </div>
+                        @if (IsYearInvalid)
+                        {
+                            <span class="text-danger">@(YearInvalidMessage)</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 row mb-4">
+            <div class="col-md-4">
+                <NazmCardGradient UniqueId="DiscoveriesCount"
+                                  CSS="card card-img-holder box-discovery text-dark p-3"
+                                  CardBgGradient="@(Infrastructure.Enums.CardBgGradientType.Info)">
+                    <IconOrTextOne>
+                        <i class="mdi mdi-expand-all mdi-64px float-left"></i>
+                    </IconOrTextOne>
+                    <IconOrTextTwo>
+                        <h3>@(UtilityClass.setSeparatedDigits(CountInvoice.ToString()))</h3>
+                    </IconOrTextTwo>
+                    <Title>
+                        @(Resources.DataDictionary.CountInvoice)
+                    </Title>
+
+                </NazmCardGradient>
+            </div>
+            <div class="col-md-4">
+                <NazmCardGradient UniqueId="DiscoveriesCount"
+                                  CSS="card card-img-holder box-discovery text-dark p-3"
+                                  CardBgGradient="@(Infrastructure.Enums.CardBgGradientType.Success)">
+                    <IconOrTextOne>
+                        <i class="mdi mdi-check-circle mdi-64px float-left"></i>
+                    </IconOrTextOne>
+                    <IconOrTextTwo>
+                        <h3>@(UtilityClass.setSeparatedDigits(CountInvoiceSuccess.ToString()))</h3>
+                    </IconOrTextTwo>
+                    <Title>
+                        @(Resources.DataDictionary.CountInvoiceSuccess)
+                    </Title>
+
+                </NazmCardGradient>
+            </div>
+            <div class="col-md-4">
+                <NazmCardGradient UniqueId="CountInvoiceFailed"
+                                  CSS="card card-img-holder box-discovery text-dark p-3"
+                                  CardBgGradient="@(Infrastructure.Enums.CardBgGradientType.Danger)">
+                    <IconOrTextOne>
+                        <i class="mdi mdi-close mdi-64px float-left"></i>
+                    </IconOrTextOne>
+                    <IconOrTextTwo>
+                        <h3>@(UtilityClass.setSeparatedDigits(CountInvoiceFailed.ToString()))</h3>
+                    </IconOrTextTwo>
+                    <Title>
+                        @(Resources.DataDictionary.CountInvoiceFailed)
+                    </Title>
+
+                </NazmCardGradient>
+            </div>
+            <div class="col-md-4">
+                <NazmCardGradient UniqueId="CountInvoicePending"
+                                  CSS="card card-img-holder box-discovery text-dark p-3"
+                                  CardBgGradient="@(Infrastructure.Enums.CardBgGradientType.Info)">
+                    <IconOrTextOne>
+                        <i class="mdi mdi-clock-time-five mdi-64px float-left"></i>
+                    </IconOrTextOne>
+                    <IconOrTextTwo>
+                        <h3>@(UtilityClass.setSeparatedDigits(CountInvoicePending.ToString()))</h3>
+                    </IconOrTextTwo>
+                    <Title>
+                        @(Resources.DataDictionary.CountInvoicePending)
+                    </Title>
+
+                </NazmCardGradient>
+            </div>
+            <div class="col-md-4">
+                <NazmCardGradient UniqueId="CountInvoiceSending"
+                                  CSS="card card-img-holder box-discovery text-dark p-3"
+                                  CardBgGradient="@(Infrastructure.Enums.CardBgGradientType.Success)">
+                    <IconOrTextOne>
+                        <i class="mdi mdi-send mdi-64px float-left"></i>
+                    </IconOrTextOne>
+                    <IconOrTextTwo>
+                        <h3>@(UtilityClass.setSeparatedDigits(CountInvoiceSending.ToString()))</h3>
+                    </IconOrTextTwo>
+                    <Title>
+                        @(Resources.DataDictionary.CountInvoiceSending)
+                    </Title>
+
+                </NazmCardGradient>
+            </div>
+            <div class="col-md-4">
+                <NazmCardGradient UniqueId="CountInvoiceCancel"
+                                  CSS="card card-img-holder box-discovery text-dark p-3"
+                                  CardBgGradient="@(Infrastructure.Enums.CardBgGradientType.Danger)">
+                    <IconOrTextOne>
+                        <i class="mdi mdi-cancel mdi-64px float-left"></i>
+                    </IconOrTextOne>
+                    <IconOrTextTwo>
+                        <h3>@(UtilityClass.setSeparatedDigits(CountInvoiceCancel.ToString()))</h3>
+                    </IconOrTextTwo>
+                    <Title>
+                        @(Resources.DataDictionary.CountInvoiceCancel)
+                    </Title>
+
+                </NazmCardGradient>
+            </div>
+        </div>
+    </div>
+
+
+}
+
+<NazmNotification NotificationSettings="@(lstNotifications)" />
+
+
+@code {
+    // ********************
+    #region Properties
+
+    [Parameter]
+    public int? refMenuId { get; set; }
+
+    public bool IsShowLoading { get; set; }
+    public bool IsFormProgressing { get; set; }
+
+    public PersianCalendar PersianCalendar { get; set; }
+
+    public int? SelectedYear { get; set; }
+    private DateTime FromDateYear { get; set; }
+    private DateTime ToDateYear { get; set; }
+
+    private List<Infrastructure.ComboClass> cmbYears { get; set; }
+
+    private bool IsYearInvalid { get; set; }
+    private string YearInvalidMessage { get; set; }
+
+    public long CountInvoice { get; set; }
+    public long CountInvoicePending { get; set; }
+    public long CountInvoiceSending { get; set; }
+    public long CountInvoiceCancel { get; set; }
+    public long CountInvoiceSuccess { get; set; }
+    public long CountInvoiceFailed { get; set; }
+
+    private List<Infrastructure.NotificationSettings> lstNotifications { get; set; }
+
+    #endregion
+
+    // ********************
+    #region Events
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        IsShowLoading = true;
+        // ********************
+
+        lstNotifications = new List<Infrastructure.NotificationSettings>();
+
+        PersianCalendar = new PersianCalendar();
+
+        cmbYears = new List<Infrastructure.ComboClass>();
+
+        /* MockData User
+        string strUserName = await myStorage.GetItemAsync<string>(Infrastructure.Utility.Key_UserName);
+        Infrastructure.MockData.UserClass user = await UserMockService.GetInstance().findByUserNameAsync(strUserName);
+
+            if (user != null)
+            {
+            await GetNotCheckedCountAsync(user.Id);
+
+            await GetConfirm1CountAsync(user.Id);
+        }
+        */
+
+        System.Guid? userId = await UtilityClass.getUserIdFromTokenAsync(TokenService);
+        if (userId != null)
+        {
+            bindYears();
+
+            SelectedYear = Nazm.DateConversionClass.GetInstance().GetPersianDateYearNumber(Nazm.DateTime.Now);
+
+            IsYearInvalid = false;
+
+            await OnYearSubmit();
+        }
+
+
+        // ********************
+        IsShowLoading = false;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+    }
+
+    protected override bool ShouldRender()
+    {
+        return base.ShouldRender();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private void bindYears()
+    {
+        var year = 1402;
+        cmbYears.Add(new Infrastructure.ComboClass()
+        {
+            Id = year,
+            Title = year.ToString(),
+        });
+
+        while (year != Nazm.DateConversionClass.GetInstance().GetPersianDateYearNumber(Nazm.DateTime.Now))
+        {
+            year++;
+            cmbYears.Add(new Infrastructure.ComboClass()
+            {
+                Id = year,
+                Title = year.ToString(),
+            });
+        }
+    }
+
+    private async Task OnYearChanged(dynamic value)
+    {
+        IsFormProgressing = true;
+        // ********************
+
+        IsYearInvalid = YearValidation(value);
+
+        SelectedYear = value;
+
+        await OnYearSubmit();
+
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private bool YearValidation(int? year)
+    {
+        var thisYear = Nazm.DateConversionClass.GetInstance().GetPersianDateYearNumber(Nazm.DateTime.Now);
+
+        if (!(year != 0 && year != null))
+        {
+            YearInvalidMessage = string.Format(Resources.Messages.Validations.Required, Resources.DataDictionary.Year);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    private async Task OnYearSubmit()
+    {
+        IsFormProgressing = true;
+        // ********************
+
+        if (!IsYearInvalid)
+        {
+            FromDateYear = PersianCalendar.ToDateTime(SelectedYear.Value, 1, 1, 0, 0, 0, 0);
+            ToDateYear = PersianCalendar.ToDateTime((SelectedYear.Value + 1), 1, 1, 0, 0, 0, 0).AddDays(-1);
+            await bindStates();
+        }
+
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task bindStates()
+    {
+        if (refMenuId != null)
+        {
+            ViewModels.STATUS_COUNTs.STATUS_COUNTInputParamsViewModel inputParamsViewModel = new ViewModels.STATUS_COUNTs.STATUS_COUNTInputParamsViewModel()
+            {
+                YEAR = SelectedYear.Value,
+                MenuId = refMenuId,
+                PageNumber = 1,
+                PageSize = 100,
+
+            };
+
+            var responce = await STATUS_COUNTsService.FetchtByYEARAsync(inputParamsViewModel);
+            if (responce.IsSuccess && responce.Value != null)
+            {
+
+                var pendings = responce.Value.Items.FirstOrDefault(i => i.STATUS == "PENDING");
+                CountInvoicePending = pendings != null ?  pendings.SCOUNT : 0;
+
+                var sendings = responce.Value.Items.FirstOrDefault(i => i.STATUS == "NOT SEND");
+                CountInvoiceSending = sendings != null ? sendings.SCOUNT : 0;
+
+                var cancles = responce.Value.Items.FirstOrDefault(i => i.STATUS == "REVOKE");
+                CountInvoiceCancel = cancles != null ? cancles.SCOUNT : 0;
+
+                var successes = responce.Value.Items.FirstOrDefault(i => i.STATUS == "SUCCESS");
+                CountInvoiceSuccess = successes != null ? successes.SCOUNT : 0;
+
+                var faileds = responce.Value.Items.FirstOrDefault(i => i.STATUS == "FAILED");
+                CountInvoiceFailed = faileds != null ? faileds.SCOUNT : 0;
+
+
+                CountInvoice = CountInvoicePending + CountInvoiceSending + CountInvoiceCancel + CountInvoiceSuccess + CountInvoiceFailed;
+
+            }
+
+
+            StateHasChanged();
+        }
+
+    }
+
+
+    #endregion
+}

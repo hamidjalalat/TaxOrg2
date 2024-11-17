@@ -1,0 +1,1494 @@
+﻿@page "/Nazm_tspagent/List/{refMenuId:int?}/{refIsReturned:int?}/{refBranchId:int?}/{refInvoiceModelId:int?}/{refNetsaleId:int?}/{refDimProductId:int?}/{refInno:long?}/{refBid?}/{refBpc?}/{refPolicyNo?}/{refStatus:int?}/{refYear:int?}/{refSeason:int?}/{refMonth:int?}"
+
+@inject IJSRuntime JsRuntime;
+@inject NavigationManager NavigationManager;
+@inject Infrastructure.Utility UtilityClass;
+@inject Infrastructure.NotificationSettings NotificationSettingsClass;
+
+@inject Services.Nazm_tspagentsService Nazm_tspagentsService;
+@inject Services.BranchsService BranchsService ;
+@inject Services.InvoiceModelsService InvoiceModelsService ;
+@inject Services.NetsalesService NetsalesService ;
+@inject Services.DimProductsService DimProductsService ;
+
+@using System.Globalization;
+
+@if (IsFormLoading)
+{
+    <NazmLoading IsShow="true" />
+}
+else
+{
+    @if (IsFormProgressing)
+    {
+        <NazmLoadingProgress IsShow="true" />
+    }
+
+    @if (refMenuId != null)
+    {
+        <div id="dgv-main-div" class="row">
+
+            <div class="col">
+
+                <div class="accordion" id="accordionPanelsStayOpenExample">
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header justify-content-around">
+                            <button class="accordion-button @((dgvMain != null) ? "collapsed": "")" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="@((dgvMain != null) ? "": "true")" aria-controls="panelsStayOpen-collapseOne">
+                                @(Resources.DataDictionary.Filters)
+                            </button>
+                        </h2>
+                        <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse @((dgvMain != null) ? "": "show")">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-sm-2 mb-3">
+                                        <label for="SelectedYear" class="form-label">@(Resources.DataDictionary.DateShYear) :</label>
+                                        <div class="@(IsYearInvalid ? "invalid" : "")">
+                                            <NazmDropDown UniqueId="year" CSS="form-control"
+                                                            IsAllowClear="true" IsAllowFiltering="true" Placeholder="@(Resources.Messages.Validations.PleaseSelectOne)"
+                                                            ValueProperty="Id" TextProperty="Title"
+                                                            DataItems="@(cmbYears)" BindValue="SelectedYear"
+                                                            TItem="Infrastructure.ComboClass" TResult="int"
+                                                            ValueChangedEventHandler="OnYearChanged" />
+                                        </div>
+                                        @if (IsYearInvalid)
+                                        {
+                                            <span class="text-danger">@(YearInvalidMessage)</span>
+                                        }
+                                    </div>
+                                </div>
+                                <EditForm Model="InputModel" OnValidSubmit="OnFiltersSubmitAsync">
+                                    <FluentValidationValidator />
+                                    <DataAnnotationsValidator />
+                                    <div>
+                                        <div class="row">
+                                            <div class="col-sm-2 mb-3">
+                                                <label for="season" class="form-label">@(Resources.DataDictionary.Season) :</label>
+                                                <NazmDropDown UniqueId="Season" CSS="form-control"
+                                                              IsAllowClear="true" IsAllowFiltering="true" Placeholder="@(Resources.Messages.Validations.PleaseSelectOne)"
+                                                              ValueProperty="Id" TextProperty="Title"
+                                                              DataItems="@(cmbSeasons)" BindValue="SelectedSeason"
+                                                              TItem="Infrastructure.ComboClass" TResult="int"
+                                                              ValueChangedEventHandler="OnSeasonChanged" />
+                                                <div class="form-control-validation">
+                                                    <ValidationMessage For="() => SelectedSeason" />
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-2 mb-3">
+                                                <label for="Month" class="form-label">@(Resources.DataDictionary.Month) :</label>
+                                                <NazmDropDown UniqueId="Month" CSS="form-control"
+                                                              IsAllowClear="true" IsAllowFiltering="true" Placeholder="@(Resources.Messages.Validations.PleaseSelectOne)"
+                                                              ValueProperty="Id" TextProperty="Title"
+                                                              DataItems="@(cmbMonths)" BindValue="SelectedMonth"
+                                                              TItem="Infrastructure.ComboClass" TResult="int"
+                                                              ValueChangedEventHandler="OnMonthChanged" />
+                                                <div class="form-control-validation">
+                                                <ValidationMessage For="() => SelectedMonth" />
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-2 mb-3">
+                                                <label for="Branch" class="form-label">@(Resources.DataDictionary.Branch) :</label>
+                                                <RadzenDropDownDataGrid id="Branch" class="form-control" AllowClear="true"
+                                                                        AllowFiltering="true" FilterOperator="StringFilterOperator.Contains"
+                                                                        ValueProperty="Id" TextProperty="Name" Placeholder="@(Resources.Messages.Validations.PleaseSelectOne)"
+                                                                        Data="@(cmbBranches)" @bind-Value="@(InputModel.BranchId)" Change="(args) => OnBranchChanged(args)"
+                                                                        PagerAlwaysVisible="true" ShowPagingSummary="true" PagingSummaryFormat="@(Resources.Messages.Common.PagingSummaryFormat)"
+                                                                        SearchTextPlaceholder="@(Resources.DataDictionary.Filter)">
+                                                    <Columns>
+                                                        <RadzenDropDownDataGridColumn Property="Name" Title="@(Resources.DataDictionary.Title)" Filterable="true" Sortable="false" />
+                                                    </Columns>
+                                                </RadzenDropDownDataGrid>
+                                                <div class="form-control-validation">
+                                                    <ValidationMessage For="() => InputModel.BranchId" />
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-2 mb-3">
+                                                <label for="InvoiceModel" class="form-label">@(Resources.DataDictionary.InvoiceModel) :</label>
+                                                <NazmDropDown UniqueId="InvoiceModel" CSS="form-control"
+                                                              IsAllowClear="true" IsAllowFiltering="true" Placeholder="@(Resources.Messages.Validations.PleaseSelectOne)"
+                                                              ValueProperty="Id" TextProperty="Name"
+                                                              DataItems="@(cmbInvoiceModels)" BindValue="InputModel.InvoiceModelId"
+                                                              TItem="ViewModels.InvoiceModels.InvoiceModelActiveViewModel" TResult="int"
+                                                              ValueChangedEventHandler="OnInvoiceModelChanged" />
+                                                <div class="form-control-validation">
+                                                    <ValidationMessage For="() => InputModel.InvoiceModelId" />
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-2 mb-3">
+                                                <label for="Netsale" class="form-label">@(Resources.DataDictionary.Netsale) :</label>
+                                                <RadzenDropDownDataGrid id="Netsale" class="form-control" AllowClear="true"
+                                                                        AllowFiltering="true" FilterOperator="StringFilterOperator.Contains"
+                                                                        ValueProperty="Id" TextProperty="Name" Placeholder="@(Resources.Messages.Validations.PleaseSelectOne)"
+                                                                        Data="@(cmbNetsales)" @bind-Value="@(InputModel.NetsaleId)" Change="(args) => OnNetsaleChanged(args)"
+                                                                        PagerAlwaysVisible="true" ShowPagingSummary="true" PagingSummaryFormat="@(Resources.Messages.Common.PagingSummaryFormat)"
+                                                                        SearchTextPlaceholder="@(Resources.DataDictionary.Filter)">
+                                                    <Columns>
+                                                        <RadzenDropDownDataGridColumn Property="Name" Title="@(Resources.DataDictionary.Title)" Filterable="true" Sortable="false" />
+                                                    </Columns>
+                                                </RadzenDropDownDataGrid>
+                                                <div class="form-control-validation">
+                                                    <ValidationMessage For="() => InputModel.NetsaleId" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-sm-2 mb-3">
+                                                <label for="DimProduct" class="form-label">@(Resources.DataDictionary.DimProduct) :</label>
+                                                <NazmDropDown UniqueId="DimProduct" CSS="form-control"
+                                                              IsAllowClear="true" IsAllowFiltering="true" Placeholder="@(Resources.Messages.Validations.PleaseSelectOne)"
+                                                              ValueProperty="Id" TextProperty="Name"
+                                                              DataItems="@(cmbDimProducts)" BindValue="InputModel.DimProductId"
+                                                              TItem="ViewModels.DimProducts.DimProductActiveViewModel" TResult="int"
+                                                              ValueChangedEventHandler="OnDimProductChanged" />
+                                                <div class="form-control-validation">
+                                                    <ValidationMessage For="() => InputModel.DimProductId" />
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-2 mb-3">
+                                                <label for="PolicyNo" class="form-label">@(Resources.DataDictionary.POLICY_NO) :</label>
+                                                <NazmInputText UniqueId="PolicyNo"
+                                                               CSS="form-control"
+                                                               ValueProperty="@(InputModel.PolicyNo)"
+                                                               ValueChangedEventHandler="OnPolicyNoChanged" />
+                                                <div class="form-control-validation">
+                                                    <ValidationMessage For="() => InputModel.PolicyNo" />
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-2  mb-3">
+                                                <label for="Inno" class="form-label">@(Resources.DataDictionary.INNO) :</label>
+                                                <InputNumber id="Inno" class="form-control" @bind-Value="InputModel.Inno" />
+                                                <div class="form-control-validation">
+                                                    <ValidationMessage For="() => InputModel.Inno" />
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-2 mb-3">
+                                                <label for="Bid" class="form-label">@(Resources.DataDictionary.BID) :</label>
+                                                <NazmInputText UniqueId="Bid"
+                                                               CSS="form-control"
+                                                               ValueProperty="@(InputModel.Bid)"
+                                                               ValueChangedEventHandler="OnBidChanged" />
+                                                <div class="form-control-validation">
+                                                    <ValidationMessage For="() => InputModel.Bid" />
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-2 mb-3">
+                                                <label for="Bpc" class="form-label">@(Resources.DataDictionary.BPC) :</label>
+                                                <NazmInputText UniqueId="Bpc"
+                                                               CSS="form-control"
+                                                               ValueProperty="@(InputModel.Bpc)"
+                                                               ValueChangedEventHandler="OnBpcChanged" />
+                                                <div class="form-control-validation">
+                                                    <ValidationMessage For="() => InputModel.Bpc" />
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-12 mb-3">
+                                                <label class="form-label">@(Resources.DataDictionary.Status) :</label>
+                                                <InputRadioGroup @bind-Value="InputModel.Status">
+                                                    <div class="form-check-inline">
+                                                        <InputRadio id="all" class="" Value="@(Domain.Enums.StatusEnum.ALL)" />
+                                                        <label for="all" class="form-check-label">@(Resources.DataDictionary.All)</label>
+                                                    </div>
+                                                    <div class="form-check-inline">
+                                                        <InputRadio id="Success" class="" Value="@(Domain.Enums.StatusEnum.SUCCESS)" />
+                                                        <label for="Success" class="form-check-label">@(Resources.DataDictionary.Success)</label>
+                                                    </div>
+                                                    <div class="form-check-inline">
+                                                        <InputRadio id="Failed" class="" Value="@(Domain.Enums.StatusEnum.FAILED)" />
+                                                        <label for="Failed" class="form-check-label">@(Resources.DataDictionary.Failed)</label>
+                                                    </div>
+                                                    <div class="form-check-inline">
+                                                        <InputRadio id="Sending" class="" Value="@(Domain.Enums.StatusEnum.SENDING)" />
+                                                        <label for="Sending" class="form-check-label">@(Resources.DataDictionary.Sending)</label>
+                                                    </div>
+                                                    <div class="form-check-inline">
+                                                        <InputRadio id="Pending" class="" Value="@(Domain.Enums.StatusEnum.PENDING)" />
+                                                        <label for="Pending" class="form-check-label">@(Resources.DataDictionary.Pending)</label>
+                                                    </div>
+                                                    <div class="form-check-inline">
+                                                        <InputRadio id="Cancel" class="" Value="@(Domain.Enums.StatusEnum.CANCEL)" />
+                                                        <label for="Cancel" class="form-check-label">@(Resources.DataDictionary.Cancel)</label>
+                                                    </div>
+                                                </InputRadioGroup>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="mb-3  d-flex justify-content-end">
+                                                <button type="submit" class="btn btn-primary btn-sm" title="@(Resources.Buttons.Show)">
+                                                    <i class="@(Resources.ButtonsIcon.Show) @(Resources.DefaultValues.IconSize24)"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </EditForm>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button @((dgvMain != null) ? "": "collapsed")" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseTwo" aria-expanded="@((dgvMain != null) ? "true": "")" aria-controls="panelsStayOpen-collapseTwo">
+                                @(Resources.DataDictionary.List)
+                            </button>
+                        </h2>
+                        <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse  @((dgvMain != null) ? "show": "")">
+                            <div class="accordion-body">
+
+                                <RadzenDataGrid TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" @ref="refToDataGrid" Data="@((dgvMain != null) ? dgvMain.Items: null)"
+                                                AllowColumnResize="true" AllowPaging="false" ShowPagingSummary="false" PagerPosition="PagerPosition.Bottom"
+                                                AllowSorting="true" Sort="OnSortGrid"
+                                                AllowFiltering="true" Filter="OnFilterAddGrid" FilterCleared="OnFilterClearedGrid" FilterDelay="@(Infrastructure.Utility.DataGridFilterDelay)"
+                                                FilterMode="FilterMode.Simple" LogicalFilterOperator="LogicalFilterOperator.And" FilterPopupRenderMode="PopupRenderMode.OnDemand"
+                                                ApplyFilterText="@(Resources.Buttons.Apply)" ClearFilterText="@(Resources.Buttons.Clear)">
+                                    <EmptyTemplate>
+                                        <NazmDataGridEmptyTemplate />
+                                    </EmptyTemplate>
+
+                                    <HeaderTemplate>
+                                        <NazmDataGridHeaderTemplate IsGridExportExcelButton="true" GridExportExcelEventHandler="GridExportExcelAsync" IsCreateButton="true" CreateEventHandler="Create" />
+                                    </HeaderTemplate>
+
+                                    <Columns>
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Title="@(Resources.DataDictionary.Action)" Filterable="false" Sortable="false" CssClass="actionDropdownButton" Width="90px">
+                                            <Template Context="itemData">
+                                                @if (!(!itemData.ShowEdit && !itemData.IsEdited && !itemData.ShowEditDelete && !itemData.IsCancel))
+                                                {
+                                                    <div class="">
+@*                                                         <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                            <i class="@(Resources.ButtonsIcon.Setting) @(Resources.DefaultValues.IconSize24)"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu">
+                                                            <li>
+                                                                <div class="dropdown-item"> *@
+                                                                    @if (itemData.ShowEdit)
+                                                                    {
+                                                                        <button type="button" class="btn btn-warning btn-sm ml-1" title="@(Resources.Buttons.Edit)" @onclick="() => Edit(itemData)">
+                                                                            <i class="@(Resources.ButtonsIcon.Edit) @(Resources.DefaultValues.IconSize18)"></i>
+                                                                        </button>
+                                                                    }
+                                                                    @if (itemData.IsEdited)
+                                                                    {
+                                                                        <button type="button" class="btn btn-sm ml-1" style="background-color: @(itemData.StatusColor); color: white" title="@(Resources.Buttons.EditTsp)" @onclick="() => passingNewModel(itemData, true)" data-bs-toggle="modal" data-bs-target="#modalEdit">
+                                                                            <i class="@(Resources.ButtonsIcon.EditTsp) @(Resources.DefaultValues.IconSize18)"></i>
+                                                                        </button>
+                                                                    }
+                                                                    @if(itemData.ShowEditDelete)
+                                                                    {
+                                                                        <button type="button" class="btn btn-danger btn-sm ml-1" title="@(Resources.Buttons.Delete)" @onclick="() => passingNewModel(itemData)" data-bs-toggle="modal" data-bs-target="#modalDelete">
+                                                                            <i class="@(Resources.ButtonsIcon.Delete) @(Resources.DefaultValues.IconSize18)"></i>
+                                                                        </button>
+                                                                    }
+                                                                    @if(itemData.IsCancel)
+                                                                    {
+                                                            <button type="button" class="btn btn-sm ml-1" style="background-color: @(itemData.StatusColor); color: white" title="@(Resources.Buttons.CancelTsp)" @onclick="() => passingNewModel(itemData)" data-bs-toggle="modal" data-bs-target="#modalCancle">
+                                                                            <i class="@(Resources.ButtonsIcon.CancelTsp) @(Resources.DefaultValues.IconSize18)"></i>
+                                                                        </button>
+                                                                    }
+@*                                                                 </div>
+                                                            </li>
+                                                        </ul> *@
+                                                    </div>
+                                                }
+                                            </Template>
+                                        </RadzenDataGridColumn>
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Title="" Filterable="false" Sortable="false" CssClass="actionDropdownButton" Width="50px">
+                                            <Template Context="itemData">
+                                                <div class="w-100 d-flex justify-content-center">
+                                                    <span class="mdi mdi-circle" style="font-size: 25px; color : @(itemData.StatusColor)"></span>
+
+                                                </div>
+
+                                            </Template>
+                                        </RadzenDataGridColumn>
+
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="inno" Title="@(Resources.DataDictionary.INNO)" Width="100px"/>
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="IndatimDateSH" Title="@(Resources.DataDictionary.IndatimDateSH)" Width="100px" />
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="tins" Title="@(Resources.DataDictionary.TINS)" Width="100px" />
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="bid" Title="@(Resources.DataDictionary.BID)" Width="100px" />
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="tob" Title="@(Resources.DataDictionary.TOB)" Width="64px" />
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="setm" Title="@(Resources.DataDictionary.SETM)" Width="64px" />
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="tinb" Title="@(Resources.DataDictionary.TINB)" Width="100px" />
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="bpc" Title="@(Resources.DataDictionary.BPC)" Width="100px" />
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="fee" Title="@(Resources.DataDictionary.FEE)" Width="100px" />
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="inty" Title="@(Resources.DataDictionary.INTY)" Width="84px" />
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="ft" Title="@(Resources.DataDictionary.ft)" Width="100px" />
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="ins" Title="@(Resources.DataDictionary.INS)" Width="100px" />
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="inp" Title="@(Resources.DataDictionary.inp)" Width="84px" />
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="sstid" Title="@(Resources.DataDictionary.SSTID)" Width="100px" />
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="sstt" Title="@(Resources.DataDictionary.SSTT)" Width="170px" />
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="am" Title="@(Resources.DataDictionary.am)" Width="64px" />
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="dis" Title="@(Resources.DataDictionary.DIS)" Width="100px" />
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="vra" Title="@(Resources.DataDictionary.VRA)" Width="100px" />
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="TaxId" Title="@(Resources.DataDictionary.TAXID)" Width="180px" />
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="Reference_Id" Title="@(Resources.DataDictionary.REFERENCE_ID)" Width="270px" />
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="Status" Title="@(Resources.DataDictionary.Status)" Width="100px" >
+                                            <Template Context="itemData">
+                                                @if(itemData.Status != null)
+                                                {
+                                                    @(UtilityClass.getStatusTitle(itemData.Status.ToString()))
+                                                }
+                                            </Template>
+                                        </RadzenDataGridColumn>
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="Policy_No" Title="@(Resources.DataDictionary.POLICY_NO)" Width="100px" />
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="IsCancel" Title="@(Resources.DataDictionary.IsCancel)" Width="80px" >
+                                            <Template Context="itemData">
+                                                @(UtilityClass.getYesNoTitle(itemData.IsActive.ToString()))
+                                            </Template>
+                                        </RadzenDataGridColumn>
+                                        <RadzenDataGridColumn TItem="ViewModels.Nazm_tspagents.Nazm_tspagentViewModel" Property="Error_Description" Title="@(Resources.DataDictionary.Error_Description)" Width="350px" /> 
+                                    </Columns>
+                                </RadzenDataGrid>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        @if (dgvMain != null && IsFormProgressing == false)
+        {
+            <NazmPagination TotalCount="@(dgvMain.TotalCount)" TotalPages="@(dgvMain.TotalPages)" PageNumber="@(dgvMain.PageNumber)" PageSize="@(dgvMain.PageSize)" EventPageNumberChanged="OnPageNumberChangedGrid" EventPageSizeChanged="OnPageSizeChangedGrid" />
+        }
+    }
+    else
+    {
+        <NazmEmptyRecord />
+    }
+
+}
+
+<NazmNotification NotificationSettings="@(lstNotifications)" />
+
+<NazmModal  UniqueId="modalDelete"
+            RequiredClose="true"
+            IconType="Infrastructure.Enums.ModalClass.ModalIconType.Warning"
+            StateType="Infrastructure.Enums.ModalClass.ModalStateType.Confirm"
+            Title="@(Resources.DataDictionary.Warning)"
+           EventCallbackHandler="modalDeleteConfirmHandlerAsync">
+    <Body>
+        @(string.Format(Resources.Messages.Validations.MessageDelete, Resources.DataDictionary.Nazm_tspagent))
+    </Body>
+</NazmModal>
+
+<NazmModal  UniqueId="modalCancle"
+            RequiredClose="true"
+            IconType="Infrastructure.Enums.ModalClass.ModalIconType.Warning"
+            StateType="Infrastructure.Enums.ModalClass.ModalStateType.Confirm"
+            Title="@(Resources.DataDictionary.Warning)"
+            EventCallbackHandler="modalCancelConfirmHandlerAsync">
+    <Body>
+        @(string.Format(Resources.Messages.Validations.MessageCancel, Resources.DataDictionary.Nazm_tspagent))
+    </Body>
+</NazmModal>
+
+<div class="modal fade" id="modalEdit" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalEditLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="modalEditLabel">
+                    @(Resources.DataDictionary.EditTsp)
+                </h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <EditForm Model="EditForSendModel" OnValidSubmit="EditModalSubmitet">
+                <FluentValidationValidator />
+                <DataAnnotationsValidator />
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="fee" class="form-label">@(Resources.DataDictionary.FEE) :</label>
+                        <InputNumber id="fee" class="form-control" @bind-Value="EditForSendModel.fee" />
+                        <div class="form-control-validation">
+                            <ValidationMessage For="() => EditForSendModel.fee" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="fromDate" class="form-label">@(Resources.DataDictionary.Date) :</label>
+                        <NazmDatePickerPersian DateInput="EditForSendModel.indatim" EventDateChanged="OnIndatimDateSetAsync" />
+                        <div class="form-control-validation">
+                            <ValidationMessage For="() => EditForSendModel.indatim" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger btn-sm" title="@(Resources.Buttons.Cancel)" data-bs-dismiss="modal">
+                        <i class="@(Resources.ButtonsIcon.Cancel) @(Resources.DefaultValues.IconSize24)"></i>
+                    </button>
+                    <button type="submit" class="btn btn-success btn-sm" title="@(Resources.Buttons.Save)" data-bs-dismiss="modal">
+                        <i class="@(Resources.ButtonsIcon.Save) @(Resources.DefaultValues.IconSize24)"></i>
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    // ********************
+    #region Properties
+
+    [Parameter]
+    public int? refMenuId { get; set; }
+
+    [Parameter]
+    public int? refIsReturned { get; set; }
+    [Parameter]
+    public int? refBranchId { get; set; }
+    [Parameter]
+    public int? refInvoiceModelId { get; set; }
+    [Parameter]
+    public int? refNetsaleId { get; set; }
+    [Parameter]
+    public int? refDimProductId { get; set; }
+    [Parameter]
+    public long? refInno { get; set; }
+    [Parameter]
+    public string refBid { get; set; }
+    [Parameter]
+    public string refBpc { get; set; }
+    [Parameter]
+    public string refPolicyNo { get; set; }
+    [Parameter]
+    public int? refStatus { get; set; }
+    [Parameter]
+    public int? refYear { get; set; }
+    [Parameter]
+    public int? refSeason { get; set; }
+    [Parameter]
+    public int? refMonth { get; set; }
+
+    public bool IsFormLoading { get; set; }
+    public bool IsFormProgressing { get; set; }
+
+    private List<ViewModels.SortItem> lstSortItems { get; set; }
+    private List<ViewModels.FilterItem> lstFilterItems { get; set; }
+    RadzenDataGrid<ViewModels.Nazm_tspagents.Nazm_tspagentViewModel> refToDataGrid;
+    public ViewModels.PagingViewModel<ViewModels.Nazm_tspagents.Nazm_tspagentViewModel> dgvMain { get; set; }
+
+    public PersianCalendar PersianCalendar { get; set; }
+
+    private ViewModels.Nazm_tspagents.Nazm_tspagentInputParamsViewModel InputModel { get; set; }
+
+    private ViewModels.Nazm_tspagents.Nazm_tspagentEditForSendViewModel EditForSendModel { get; set; }
+
+    private ViewModels.Nazm_tspagents.Nazm_tspagentViewModel Model { get; set; }
+
+    public int? SelectedYear { get; set; }
+    public int? SelectedSeason { get; set; }
+    public int? SelectedMonth { get; set; }
+
+    private DateTime FromDateMonth { get; set; }
+    private DateTime ToDateMonth { get; set; }
+    private DateTime FromDateSeason { get; set; }
+    private DateTime ToDateSeason { get; set; }
+    private DateTime FromDateYear { get; set; }
+    private DateTime ToDateYear { get; set; }
+
+    private List<Infrastructure.ComboClass> cmbYears { get; set; }
+    private IEnumerable<Infrastructure.ComboClass> cmbSeasons { get; set; }
+    private IEnumerable<Infrastructure.ComboClass> cmbMonths { get; set; }
+
+    public IEnumerable<ViewModels.Branchs.BranchActiveViewModel> cmbBranches { get; set; }
+    public IEnumerable<ViewModels.InvoiceModels.InvoiceModelActiveViewModel> cmbInvoiceModels { get; set; }
+    public IEnumerable<ViewModels.Netsales.NetsaleActiveViewModel> cmbNetsales { get; set; }
+    public IEnumerable<ViewModels.DimProducts.DimProductActiveViewModel> cmbDimProducts { get; set; }
+
+    private int CurrentPersianYear {get; set; }
+    private bool IsYearInvalid { get; set; }
+    private string YearInvalidMessage { get; set; }
+
+    private List<Infrastructure.NotificationSettings> lstNotifications { get; set; }
+
+
+    #endregion
+
+    // ********************
+    #region Events
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        IsFormLoading = true;
+        // ********************
+
+
+        lstFilterItems = new List<ViewModels.FilterItem>();
+        lstSortItems = new List<ViewModels.SortItem>();
+        lstNotifications = new List<Infrastructure.NotificationSettings>();
+        dgvMain = null;
+
+        PersianCalendar = new PersianCalendar();
+
+        CurrentPersianYear = Nazm.DateConversionClass.GetInstance().GetPersianDateYearNumber(Nazm.DateTime.Now);
+
+        EditForSendModel = new ViewModels.Nazm_tspagents.Nazm_tspagentEditForSendViewModel();
+
+        InputModel = new ViewModels.Nazm_tspagents.Nazm_tspagentInputParamsViewModel();
+
+        Model = new ViewModels.Nazm_tspagents.Nazm_tspagentViewModel();
+
+        InputModel.Status = Domain.Enums.StatusEnum.ALL;
+
+
+        cmbYears = new List<Infrastructure.ComboClass>();
+
+        var lstComboSeasons = await UtilityClass.getSeasonsAsync();
+        if (lstComboSeasons != null)
+        {
+            cmbSeasons = lstComboSeasons;
+        }
+
+        var lstComboMonths = await UtilityClass.getPersianMonthsAsync();
+        if (lstComboMonths != null)
+        {
+            cmbMonths = lstComboMonths;
+        }
+
+        bindYears();
+        await bindBranches();
+        await bindInvoiceModels();
+        await bindNetsales();
+        await bindDimProducts();
+
+        if(refIsReturned == 1)
+        {
+            if(refYear != null && refYear != 0)
+            {
+                await OnYearChanged(refYear);
+            }
+            else
+            {
+                await OnYearChanged(CurrentPersianYear);
+            }
+
+            if(refBranchId != null && refBranchId != 0)
+                InputModel.BranchId = refBranchId.Value;
+
+            if(refInvoiceModelId != null && refInvoiceModelId != 0)
+                InputModel.InvoiceModelId = refInvoiceModelId.Value;
+
+            if(refNetsaleId != null && refNetsaleId != 0)
+                InputModel.NetsaleId = refNetsaleId.Value;
+
+            if(refDimProductId != null && refDimProductId != 0)
+                InputModel.DimProductId = refDimProductId.Value;
+
+            if(refInno != null && refInno != 0)
+                InputModel.Inno = refInno;
+
+            if(refBid != null)
+                InputModel.Bid = refBid;
+
+            if(refBpc != null)
+                InputModel.Bpc = refBpc;
+
+            if(refPolicyNo != null)
+                InputModel.PolicyNo = refPolicyNo;
+
+            if(refStatus != null)
+                InputModel.Status = (Domain.Enums.StatusEnum)refStatus;
+
+            if (refSeason != null && refSeason != 0)
+            {
+                await OnSeasonChanged(refSeason);
+            }
+            else
+            {
+                SelectedSeason = null;
+            }
+
+            if (refMonth != null && refMonth != 0)
+            {
+                await OnMonthChanged(refMonth);
+            }
+            else
+            {
+                SelectedMonth = null;
+            }
+
+            await OnFiltersSubmitAsync();
+
+        }
+        else
+        {
+
+            await OnYearChanged(CurrentPersianYear);
+            await InitMonthAndSeason();
+        }
+
+
+
+        IsYearInvalid = false;
+
+        // ********************
+        IsFormLoading = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (lstFilterItems.Count > 0)
+        {
+            foreach (var filterItem in lstFilterItems)
+            {
+                var column = refToDataGrid.ColumnsCollection.Where(c => c.Property == filterItem.Field).FirstOrDefault();
+
+                if (column != null)
+                {
+                    column.FilterValue = filterItem.Value;
+                    //column.FilterOperator = filterItem.Operator as Radzen.FilterOperator;
+                }
+            }
+            await refToDataGrid.Reload();
+        }
+        if (lstSortItems.Count > 0)
+        {
+            foreach (var sortItem in lstSortItems)
+            {
+                var column = refToDataGrid.ColumnsCollection.Where(c => c.Property == sortItem.Field).FirstOrDefault();
+
+                if (column != null)
+                {
+                    column.SortOrder = (sortItem.SortOrder == Infrastructure.Utility.SortAscending) ? SortOrder.Ascending : SortOrder.Descending;
+                }
+            }
+            await refToDataGrid.Reload();
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private void bindYears()
+    {
+        var year = 1402;
+        cmbYears.Add(new Infrastructure.ComboClass()
+        {
+            Id = year,
+            Title = year.ToString(),
+        });
+
+        while (year != CurrentPersianYear)
+        {
+            year++;
+            cmbYears.Add(new Infrastructure.ComboClass()
+            {
+                Id = year,
+                Title = year.ToString(),
+            });
+        }
+    }
+
+    private async Task InitMonthAndSeason()
+    {
+
+        var tempMonth = Nazm.DateConversionClass.GetInstance().GetPersianDateMonthNumber(Nazm.DateTime.Now);
+
+        int tempSeason = 0;
+
+        switch (tempMonth)
+        {
+            case 1:
+            case 2:
+            case 3:
+                tempSeason = 1;
+                break;
+            case 4:
+            case 5:
+            case 6:
+                tempSeason = 2;
+                break;
+            case 7:
+            case 8:
+            case 9:
+                tempSeason = 3;
+                break;
+            case 10:
+            case 11:
+            case 12:
+                tempSeason = 4;
+                break;
+            default:
+                break;
+        }
+
+        await OnSeasonChanged(tempSeason);
+        await OnMonthChanged(tempMonth);
+    }
+
+    private async Task OnYearChanged(dynamic value)
+    {
+        IsFormProgressing = true;
+        // ********************
+
+        IsYearInvalid = YearValidation(value);
+
+        SelectedYear = value;
+
+        if (!IsYearInvalid)
+        {
+            FromDateYear = PersianCalendar.ToDateTime(SelectedYear.Value, 1, 1, 0, 0, 0, 0);
+            ToDateYear = PersianCalendar.ToDateTime((SelectedYear.Value + 1), 1, 1, 0, 0, 0, 0).AddDays(-1);
+
+        }
+
+        SelectedMonth = null;
+        SelectedSeason = null;
+
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private bool YearValidation(int? year)
+    {
+        var thisYear = CurrentPersianYear;
+
+        if (!(year != 0 && year != null))
+        {
+            YearInvalidMessage = string.Format(Resources.Messages.Validations.Required, Resources.DataDictionary.Year);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    private async Task Create()
+    {
+        IsFormProgressing = true;
+        // ********************
+
+        var tempFromDate = InputModel.FromDate.ToString("s", System.Globalization.CultureInfo.InvariantCulture);
+        var tempToDate = InputModel.ToDate.ToString("s", System.Globalization.CultureInfo.InvariantCulture);
+
+        string uri = $"{Infrastructure.Utility.setUri<Client.Pages.Nazm_tspagent.Create>()}/{refMenuId.Value}/{setRefParameters()}";
+        //
+        NavigationManager.NavigateTo(uri: uri, forceLoad: false);
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task Edit(ViewModels.Nazm_tspagents.Nazm_tspagentViewModel viewModel)
+    {
+        IsFormProgressing = true;
+        // ********************
+        string uri = $"{Infrastructure.Utility.setUri<Client.Pages.Nazm_tspagent.Edit>()}/{refMenuId.Value}/{viewModel.id}/{setRefParameters()}";
+        NavigationManager.NavigateTo(uri: uri, forceLoad: false);
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private string setRefParameters()
+    {
+
+        InputModel.Inno = InputModel.Inno != null ? InputModel.Inno : 0;
+        InputModel.Bid = InputModel.Bid != null ? InputModel.Bid : "0";
+        InputModel.Bpc = InputModel.Bpc != null ? InputModel.Bpc : "0";
+        InputModel.PolicyNo = InputModel.PolicyNo != null ? InputModel.PolicyNo : "0";
+        SelectedSeason = SelectedSeason != null ? SelectedSeason : 0;
+        SelectedMonth = SelectedMonth != null ? SelectedMonth : 0;
+
+
+        string uri = $"{1}/{InputModel.BranchId}/{InputModel.InvoiceModelId}/{InputModel.NetsaleId}/{InputModel.DimProductId}/{InputModel.Inno}/{InputModel.Bid}/{InputModel.Bpc}/{InputModel.PolicyNo}/{(int)InputModel.Status}/{SelectedYear}/{SelectedSeason}/{SelectedMonth}";
+
+        return uri;
+    }
+
+    private async Task DeleteAsync(ViewModels.Nazm_tspagents.Nazm_tspagentViewModel viewModel)
+    {
+        IsFormProgressing = true;
+        // ********************
+        var varResult = await Nazm_tspagentsService.DeleteAsync(viewModel.id);
+        if (varResult != null)
+        {
+
+            lstNotifications.Clear();
+            if (varResult.IsSuccess)
+            {
+                if (varResult.Successes.Count() > 0)
+                    lstNotifications.AddRange(NotificationSettingsClass.setNotificationsList
+                        (varResult.Successes, Infrastructure.Enums.MessageType.Success));
+            }
+            if (varResult.IsFailed)
+            {
+                if (varResult.Errors.Count() > 0)
+                    lstNotifications.AddRange(NotificationSettingsClass.setNotificationsList
+                        (varResult.Errors, Infrastructure.Enums.MessageType.Error));
+            }
+        }
+
+        await bindGrid(pageSize: dgvMain != null ? dgvMain.PageSize : Infrastructure.Utility.PageSize);
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task CanceleAsync(ViewModels.Nazm_tspagents.Nazm_tspagentViewModel viewModel)
+    {
+        IsFormProgressing = true;
+        // ********************
+        ViewModels.Nazm_tspagents.Nazm_tspagentCancelViewModel inputParamsViewModel = new ViewModels.Nazm_tspagents.Nazm_tspagentCancelViewModel()
+        {
+            Id = viewModel.id,
+        };
+
+        var varResult = await Nazm_tspagentsService.CancelByIdAsync(inputParamsViewModel);
+        if (varResult != null)
+        {
+
+            lstNotifications.Clear();
+            if (varResult.IsSuccess)
+            {
+                if (varResult.Successes.Count() > 0)
+                    lstNotifications.AddRange(NotificationSettingsClass.setNotificationsList
+                        (varResult.Successes, Infrastructure.Enums.MessageType.Success));
+            }
+            if (varResult.IsFailed)
+            {
+                if (varResult.Errors.Count() > 0)
+                    lstNotifications.AddRange(NotificationSettingsClass.setNotificationsList
+                        (varResult.Errors, Infrastructure.Enums.MessageType.Error));
+            }
+        }
+
+        await bindGrid(pageSize: dgvMain != null ? dgvMain.PageSize : Infrastructure.Utility.PageSize);
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task EditForSendAsync(ViewModels.Nazm_tspagents.Nazm_tspagentEditForSendViewModel viewModel)
+    {
+        IsFormProgressing = true;
+        // ********************
+        ViewModels.Nazm_tspagents.Nazm_tspagentEditForSendViewModel inputParamsViewModel = new ViewModels.Nazm_tspagents.Nazm_tspagentEditForSendViewModel()
+        {
+            id = EditForSendModel.id,
+            fee = EditForSendModel.fee,
+            indatim = EditForSendModel.indatim,
+        };
+        var varResult = await Nazm_tspagentsService.EditForSendAsync(inputParamsViewModel);
+        if (varResult != null)
+        {
+
+            lstNotifications.Clear();
+            if (varResult.IsSuccess)
+            {
+                if (varResult.Successes.Count() > 0)
+                    lstNotifications.AddRange(NotificationSettingsClass.setNotificationsList
+                        (varResult.Successes, Infrastructure.Enums.MessageType.Success));
+            }
+            if (varResult.IsFailed)
+            {
+                if (varResult.Errors.Count() > 0)
+                    lstNotifications.AddRange(NotificationSettingsClass.setNotificationsList
+                        (varResult.Errors, Infrastructure.Enums.MessageType.Error));
+            }
+        }
+
+        await bindGrid(pageSize: dgvMain != null ? dgvMain.PageSize : Infrastructure.Utility.PageSize);
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task passingNewModel(ViewModels.Nazm_tspagents.Nazm_tspagentViewModel viewModel, bool IsForSendEdit = false)
+    {
+        Model = viewModel;
+
+        EditForSendModel = new ViewModels.Nazm_tspagents.Nazm_tspagentEditForSendViewModel()
+        {
+            id = Model.id,
+            fee = Model.fee,
+            indatim = Model.indatim,
+        };
+    }
+
+    private async Task OnSeasonChanged(dynamic value)
+    {
+        SelectedSeason = value;
+
+        if(SelectedSeason != null)
+        {
+            var lstComboMonths = await UtilityClass.getPersianMonthsOfSeasonAsync(SelectedSeason.Value);
+            if (lstComboMonths != null)
+            {
+                SelectedMonth = null;
+                cmbMonths = lstComboMonths;
+            }
+
+            var toDateMonth = 0;
+            var toDateYear = 0;
+
+            if (lstComboMonths[0].Id > 9)
+            {
+                toDateMonth = (lstComboMonths[0].Id + 3) - 12; 
+                toDateYear = SelectedYear.Value + 1;
+            }
+            else
+            {
+                toDateMonth = (lstComboMonths[0].Id + 3);
+                toDateYear = SelectedYear.Value;
+            }
+
+            FromDateSeason = PersianCalendar.ToDateTime(SelectedYear.Value, lstComboMonths[0].Id, 1, 0, 0, 0, 0);
+            ToDateSeason = PersianCalendar.ToDateTime(toDateYear, toDateMonth, 1, 0, 0, 0, 0).AddDays(-1);
+
+        }
+        else
+        {
+            var lstComboMonths = await UtilityClass.getPersianMonthsAsync();
+            if (lstComboMonths != null)
+            {
+                SelectedMonth = null;
+                cmbMonths = lstComboMonths;
+            }
+        }
+    }
+
+    private async Task OnMonthChanged(dynamic value)
+    {
+        SelectedMonth = value;
+        if(SelectedMonth != null)
+        {
+
+            var toDateMonth = 0;
+            var toDateYear = 0;
+
+            if (SelectedMonth.Value > 11)
+            {
+                toDateMonth = (SelectedMonth.Value + 1) - 12;
+                toDateYear = SelectedYear.Value + 1;
+            }
+            else
+            {
+                toDateMonth = (SelectedMonth.Value + 1);
+                toDateYear = SelectedYear.Value;
+            }
+
+            FromDateMonth = PersianCalendar.ToDateTime(SelectedYear.Value, SelectedMonth.Value, 1, 0, 0, 0, 0);
+            ToDateMonth = PersianCalendar.ToDateTime(toDateYear, toDateMonth, 1, 0, 0, 0, 0).AddDays(-1);
+        }
+    }
+
+    private async Task bindBranches()
+    {
+
+        IsFormProgressing = true;
+        // ********************
+        ViewModels.Shared.PublicViewModel branchInputParamsViewModel = new ViewModels.Shared.PublicViewModel()
+            {
+                PageSize = Infrastructure.Utility.PageSizeMax,
+            };
+        var varBranchesResult = await BranchsService.FetchActiveAsync(branchInputParamsViewModel);
+        if (varBranchesResult != null)
+        {
+            cmbBranches = varBranchesResult.Value.Items;
+        }
+
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task bindInvoiceModels()
+    {
+
+        IsFormProgressing = true;
+        // ********************
+        ViewModels.Shared.PublicViewModel branchInputParamsViewModel = new ViewModels.Shared.PublicViewModel()
+        {
+            PageSize = Infrastructure.Utility.PageSizeMax,
+        };
+        var varInvoiceModelsResult = await InvoiceModelsService.FetchActiveAsync(branchInputParamsViewModel);
+        if (varInvoiceModelsResult != null)
+        {
+            cmbInvoiceModels = varInvoiceModelsResult.Value.Items;
+        }
+
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task bindNetsales()
+    {
+
+        IsFormProgressing = true;
+        // ********************
+        ViewModels.Shared.PublicViewModel branchInputParamsViewModel = new ViewModels.Shared.PublicViewModel()
+            {
+                PageSize = Infrastructure.Utility.PageSizeMax,
+            };
+        var varNetsalesResult = await NetsalesService.FetchActiveAsync(branchInputParamsViewModel);
+        if (varNetsalesResult != null)
+        {
+            cmbNetsales = varNetsalesResult.Value.Items;
+        }
+
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task bindDimProducts()
+    {
+
+        IsFormProgressing = true;
+        // ********************
+        ViewModels.Shared.PublicViewModel branchInputParamsViewModel = new ViewModels.Shared.PublicViewModel()
+            {
+                PageSize = Infrastructure.Utility.PageSizeMax,
+            };
+        var varDimProductsResult = await DimProductsService.FetchActiveAsync(branchInputParamsViewModel);
+        if (varDimProductsResult != null)
+        {
+            cmbDimProducts = varDimProductsResult.Value.Items;
+        }
+
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task OnBranchChanged(object args)
+    {
+        IsFormProgressing = true;
+        // ********************
+        InputModel.BranchId = (args != null) ? int.Parse(args.ToString()) : 0;
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task OnInvoiceModelChanged(dynamic value)
+    {
+        IsFormProgressing = true;
+        // ********************
+        InputModel.InvoiceModelId = value != null? value: 0;
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task OnNetsaleChanged(object args)
+    {
+        IsFormProgressing = true;
+        // ********************
+        InputModel.NetsaleId = (args != null) ? int.Parse(args.ToString()) : 0;
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task OnDimProductChanged(dynamic value)
+    {
+        IsFormProgressing = true;
+        // ********************
+        InputModel.DimProductId = value != null ? value : 0;
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task OnPolicyNoChanged(string value)
+    {
+        IsFormProgressing = true;
+        // ********************
+        InputModel.PolicyNo = value;
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task OnBidChanged(string value)
+    {
+        IsFormProgressing = true;
+        // ********************
+        InputModel.Bid = value;
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task OnBpcChanged(string value)
+    {
+        IsFormProgressing = true;
+        // ********************
+        InputModel.Bpc = value;
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task OnModelStatusChange(ChangeEventArgs args)
+    {
+        IsFormProgressing = true;
+        // ********************
+        InputModel.Status = (Domain.Enums.StatusEnum)Enum.Parse(typeof(Domain.Enums.StatusEnum), args.Value.ToString());
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task OnFiltersSubmitAsync()
+    {
+        IsFormProgressing = true;
+        // ********************
+        await bindGrid(pageSize: dgvMain != null? dgvMain.PageSize : Infrastructure.Utility.PageSize);
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task GridExportExcelAsync()
+    {
+        IsFormProgressing = true;
+        // ********************
+
+        await bindGrid(pageSize: Infrastructure.Utility.PageSizeMax, fileExportType: Domain.Enums.FileExportTypeEnum.Office_Excel);
+
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task bindGrid(int? pageNumber = Infrastructure.Utility.PageNumber,
+                                int? pageSize = Infrastructure.Utility.PageSize,
+                                Domain.Enums.FileExportTypeEnum? fileExportType = null
+                               )
+    {
+        if (refMenuId != null && !IsYearInvalid)
+        {
+            ViewModels.FilterParams filterParams = new ViewModels.FilterParams();
+            if (lstFilterItems.Count > 0)
+            {
+                string strFilterJson = Newtonsoft.Json.JsonConvert.SerializeObject(lstFilterItems);
+
+                filterParams.FilterJson = strFilterJson;
+            }
+            if (lstSortItems.Count > 0)
+            {
+                string strSort = null;
+                foreach (var sortItem in lstSortItems)
+                {
+                    strSort += $"{sortItem.Field} {sortItem.SortOrder}, ";
+                }
+
+                filterParams.SortBy = strSort.Trim().TrimEnd(',');
+            }
+
+            var fromDate = new DateTime();
+            var toDate = new DateTime();
+            if(SelectedMonth != null)
+            {
+                fromDate = FromDateMonth;
+                toDate = ToDateMonth;
+            }
+            else if(SelectedSeason != null)
+            {
+                fromDate = FromDateSeason;
+                toDate = ToDateSeason;
+            }
+            else 
+            {
+                fromDate = FromDateYear;
+                toDate = ToDateYear;
+            }
+
+            InputModel.FromDate = fromDate;
+            InputModel.ToDate = toDate;
+
+            InputModel.Inno = InputModel.Inno != 0 ? InputModel.Inno : null;
+            InputModel.Bid = InputModel.Bid != "0" ? InputModel.Bid : null;
+            InputModel.Bpc = InputModel.Bpc != "0" ? InputModel.Bpc : null;
+            InputModel.PolicyNo = InputModel.PolicyNo != "0" ? InputModel.PolicyNo : null;
+
+            InputModel.Inno = InputModel.Inno != null ? InputModel.Inno : 0;
+
+            if (fileExportType == null)
+            {
+                ViewModels.Nazm_tspagents.Nazm_tspagentInputParamsViewModel inputParamsViewModel = new ViewModels.Nazm_tspagents.Nazm_tspagentInputParamsViewModel()
+                {
+                    FromDate = InputModel.FromDate,
+                    ToDate = InputModel.ToDate,
+                    BranchId = InputModel.BranchId,
+                    InvoiceModelId = InputModel.InvoiceModelId,
+                    NetsaleId = InputModel.NetsaleId,
+                    DimProductId = InputModel.DimProductId,
+                    PolicyNo = InputModel.PolicyNo,
+                    Inno = InputModel.Inno,
+                    Bid = InputModel.Bid,
+                    Bpc = InputModel.Bpc,
+                    Status = InputModel.Status,
+                    PageNumber = pageNumber.Value,
+                    PageSize = pageSize.Value,
+                    FilterParams = filterParams,
+                    MenuId = refMenuId.Value,
+                };
+
+                var varGrid = await Nazm_tspagentsService.FetchAllByFilterNazm_tspagentAsync(inputParamsViewModel);
+                if (varGrid != null)
+                {
+                    if (varGrid.IsSuccess)
+                        dgvMain = varGrid.Value;
+
+                }
+            }
+            else if (fileExportType == Domain.Enums.FileExportTypeEnum.Office_Excel)
+            {
+                var varGridColumns = await UtilityClass.getGridColumnListAsync(refToDataGrid.ColumnsCollection);
+
+                ViewModels.Nazm_tspagents.Nazm_tspagentInputParamsViewModel inputParamsViewModel = new()
+                {
+                    FromDate = InputModel.FromDate,
+                    ToDate = InputModel.ToDate,
+                    BranchId = InputModel.BranchId,
+                    InvoiceModelId = InputModel.InvoiceModelId,
+                    NetsaleId = InputModel.NetsaleId,
+                    DimProductId = InputModel.DimProductId,
+                    PolicyNo = InputModel.PolicyNo,
+                    Inno = InputModel.Inno,
+                    Bid = InputModel.Bid,
+                    Bpc = InputModel.Bpc,
+                    Status = InputModel.Status,
+                    PageSize = pageSize.Value,
+                    FilterParams = filterParams,
+                    MenuId = refMenuId.Value,
+                    FileExportType = Domain.Enums.FileExportTypeEnum.Office_Excel,
+                    FileExportColumns = varGridColumns,
+                };
+
+                string fileExportName = $"{Resources.DataDictionary.Nazm_tspagent}.xlsx";
+                var varExportExcelData = await Nazm_tspagentsService.FetchAllByFilterNazm_tspagentAndFileDownloadAsync(inputParamsViewModel);
+                if (varExportExcelData != null)
+                {
+                    if (varExportExcelData.IsSuccess)
+                    {
+                        await UtilityClass.FileDownloadAsDataStreamFromAPIAsync(JsRuntime, fileExportName, varExportExcelData.Value);
+
+                        if (varExportExcelData.Successes.Count() > 0)
+                            lstNotifications.AddRange(NotificationSettingsClass.setNotificationsList
+                                (varExportExcelData.Successes, Infrastructure.Enums.MessageType.Success));
+                    }
+                    if (varExportExcelData.IsFailed)
+                    {
+                        if (varExportExcelData.Errors.Count() > 0)
+                            lstNotifications.AddRange(NotificationSettingsClass.setNotificationsList
+                                (varExportExcelData.Errors, Infrastructure.Enums.MessageType.Error));
+                    }
+                }
+            }
+        }
+
+    }
+
+    private async Task OnSortGrid(DataGridColumnSortEventArgs<ViewModels.Nazm_tspagents.Nazm_tspagentViewModel> args)
+    {
+        IsFormProgressing = true;
+        // ********************
+
+        ViewModels.SortItem sortColumn = new ViewModels.SortItem()
+            {
+                Field = args.Column.Property,
+                SortOrder = (args.SortOrder == SortOrder.Ascending) ? Infrastructure.Utility.SortAscending : Infrastructure.Utility.SortDescending,
+            };
+
+        if (lstSortItems.Exists(c => c.Field == args.Column.Property))
+        {
+            await sortItemsRemove(args.Column.Property);
+        }
+        if ((args.SortOrder == SortOrder.Ascending) || (args.SortOrder == SortOrder.Descending))
+        {
+            if (lstSortItems.Count > 0)
+                lstSortItems.Clear();
+
+            lstSortItems.Add(sortColumn);
+        }
+
+        await bindGrid(pageSize: dgvMain != null ? dgvMain.PageSize : Infrastructure.Utility.PageSize);
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task OnFilterAddGrid(DataGridColumnFilterEventArgs<ViewModels.Nazm_tspagents.Nazm_tspagentViewModel> args)
+    {
+        IsFormProgressing = true;
+        // ********************
+
+        ViewModels.FilterItem filterColumn = new ViewModels.FilterItem()
+            {
+                Field = args.Column.Property,
+                Operator = args.Column.FilterOperator.ToString(),//.Replace("Equals", "eq"),
+                Value = args.Column.GetFilterValue(),
+            };
+
+        if (lstFilterItems.Exists(c => c.Field == args.Column.Property))
+        {
+            await filterItemsRemove(args.Column.Property);
+        }
+        lstFilterItems.Add(filterColumn);
+
+        await bindGrid(pageSize: dgvMain != null ? dgvMain.PageSize : Infrastructure.Utility.PageSize);
+
+        StateHasChanged();
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task OnFilterClearedGrid(DataGridColumnFilterEventArgs<ViewModels.Nazm_tspagents.Nazm_tspagentViewModel> args)
+    {
+        IsFormProgressing = true;
+        // ********************
+
+        if (lstFilterItems.Exists(c => c.Field == args.Column.Property))
+        {
+            await filterItemsRemove(args.Column.Property);
+        }
+
+        await bindGrid(pageSize: dgvMain != null ? dgvMain.PageSize : Infrastructure.Utility.PageSize);
+
+        StateHasChanged();
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task sortItemsRemove(string strField)
+    {
+        await Task.Run(() =>
+            {
+                int index = 0;
+                if (lstSortItems.Count > 0)
+                {
+                    foreach (var sortItem in lstSortItems)
+                    {
+                        if (sortItem.Field == strField)
+                            break;
+                        index++;
+                    }
+
+                    lstSortItems.RemoveAt(index);
+                }
+            });
+    }
+
+    private async Task filterItemsRemove(string strField)
+    {
+        await Task.Run(() =>
+            {
+                int index = 0;
+                if (lstFilterItems.Count > 0)
+                {
+                    foreach (var filterItem in lstFilterItems)
+                    {
+                        if (filterItem.Field == strField)
+                            break;
+                        index++;
+                    }
+
+                    lstFilterItems.RemoveAt(index);
+                }
+            });
+    }
+
+    private async Task OnPageNumberChangedGrid(int pageNum)
+    {
+        IsFormProgressing = true;
+        // ********************
+
+        await bindGrid(pageNumber: pageNum, pageSize: dgvMain?.PageSize);
+
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task OnPageSizeChangedGrid(int pageSize)
+    {
+        IsFormProgressing = true;
+        // ********************
+
+        await bindGrid(pageSize: pageSize);
+
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task modalDeleteConfirmHandlerAsync()
+    {
+        IsFormProgressing = true;
+        // ********************
+
+        await DeleteAsync(Model);
+
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task modalCancelConfirmHandlerAsync()
+    {
+        IsFormProgressing = true;
+        // ********************
+
+        await CanceleAsync(Model);
+
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    private async Task OnIndatimDateSetAsync(DateTime? datatime)
+    {
+        EditForSendModel.indatim = datatime;
+    }
+
+    private async Task EditModalSubmitet()
+    {
+        IsFormProgressing = true;
+        // ********************
+
+        await EditForSendAsync(EditForSendModel);
+
+        // ********************
+        IsFormProgressing = false;
+    }
+
+    #endregion
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@*
+<label for="Status" class="form-label">@(Resources.DataDictionary.Status) :</label>
+<br/>
+<div id="Status" class="d-inline">
+    <div class=" form-check-inline mb-3">
+        <input type="radio" id="All" class="" checked="true" value="@(0)"  @onchange="OnModelStatusChange" name="Status">
+        <label for="All" class="form-check-label">@(Resources.DataDictionary.All)</label>
+    </div>
+    <div class=" form-check-inline mb-3">
+        <input type="radio" id="Success" class="" value="@(Domain.Enums.StatusEnum.SUCCESS)"  @onchange="OnModelStatusChange" name="Status">
+        <label for="Success" class="form-check-label">@(Resources.DataDictionary.Success)</label>
+    </div>
+    <div class=" form-check-inline mb-3">
+        <input type="radio" id="Failed" class="" value="@(Domain.Enums.StatusEnum.FAILED)"  @onchange="OnModelStatusChange" name="Status">
+        <label for="Failed" class="form-check-label">@(Resources.DataDictionary.Failed)</label>
+    </div>
+    <div class=" form-check-inline mb-3">
+        <input type="radio" id="Sending" class="" value="@(Domain.Enums.StatusEnum.SENDING)"  @onchange="OnModelStatusChange" name="Status">
+        <label for="Sending" class="form-check-label">@(Resources.DataDictionary.Sending)</label>
+    </div>
+    <div class=" form-check-inline mb-3">
+        <input type="radio" id="Pending" class="" value="@(Domain.Enums.StatusEnum.PENDING)" @onchange="OnModelStatusChange" name="Status">
+        <label for="Pending" class="form-check-label">@(Resources.DataDictionary.Pending)</label>
+    </div>
+    <div class=" form-check-inline mb-3">
+        <input type="radio" id="Cancel" class="" value="@(Domain.Enums.StatusEnum.CANCEL)" @onchange="OnModelStatusChange" name="Status">
+        <label for="Cancel" class="form-check-label">@(Resources.DataDictionary.Cancel)</label>
+    </div>
+</div> *@
